@@ -1,5 +1,6 @@
 plugins {
     id("workflow.library")
+    id("workflow.native")
 }
 
 kotlin {
@@ -12,10 +13,12 @@ kotlin {
 
         }
 
-        val skikoMain = create("skikoMain") {
-            dependsOn(commonMain.get())
+        iosMain.dependencies {
+
         }
-        iosMain.get().dependsOn(skikoMain)
-        jvmMain.get().dependsOn(skikoMain)
+
+        iosMain.dependencies {
+
+        }
     }
 }
