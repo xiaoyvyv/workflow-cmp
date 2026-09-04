@@ -5,7 +5,7 @@
 <h1 align="center">workflow-cmp</h1>
 
 <p align="center">
-  <strong>基于 Kotlin Multiplatform 的声明式 DAG 自动化与工作流编排执行引擎</strong>
+  <strong>基于 Kotlin Multiplatform 与 Compose Multiplatform 的声明式 DAG 自动化与工作流编排执行引擎</strong>
 </p>
 
 <p align="center">
