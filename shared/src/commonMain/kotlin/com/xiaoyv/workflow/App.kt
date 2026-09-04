@@ -1,52 +1,46 @@
 package com.xiaoyv.workflow
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.xiaoyv.workflow.shared.resources.Res
-import com.xiaoyv.workflow.shared.resources.compose_multiplatform
-import org.jetbrains.compose.resources.painterResource
+import com.xiaoyv.workflow.demo.WorkflowsRoute
+import com.xiaoyv.workflow.demo.createWorkflowsViewModel
+import com.xiaoyv.workflow.demo.repository.InMemoryActionWorkflowRepository
+import com.xiaoyv.workflow.di.createWorkflowRuntime
+import com.xiaoyv.workflow.port.impl.DefaultActionHttpRequestExecutor
+import io.ktor.client.HttpClient
 
+/**
+ * 应用默认入口，直接展示工作流交互示例页面。
+ */
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+        val httpClient = remember {
+            HttpClient { }
         }
+
+        val runtime = remember {
+            createWorkflowRuntime(
+                httpRequestExecutor = DefaultActionHttpRequestExecutor(httpClient)
+            )
+        }
+        val viewModel = remember(runtime) {
+            createWorkflowsViewModel(
+                repository = InMemoryActionWorkflowRepository(
+                    validator = runtime.validator,
+                    codec = runtime.codec,
+                ),
+                engine = runtime.engine,
+            )
+        }
+        WorkflowsRoute(
+            viewModel = viewModel,
+            onNavUp = {},
+            onNavScreen = {},
+            nodeRegistry = runtime.registry,
+        )
     }
 }

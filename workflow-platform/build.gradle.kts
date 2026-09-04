@@ -9,6 +9,8 @@ kotlin {
     }
 
     sourceSets {
+        commonTest.dependencies {
+        }
         commonMain.dependencies {
 
         }

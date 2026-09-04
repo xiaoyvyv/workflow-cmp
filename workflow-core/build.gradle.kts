@@ -9,15 +9,15 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.workflowPlatform)
 
+            api(libs.kmp.zip)
+            api(libs.bundles.file.kit)
+            api(libs.bundles.datastore)
         }
 
-        iosMain.dependencies {
-
-        }
-
-        iosMain.dependencies {
-
+        commonTest.dependencies {
+            implementation(projects.workflowNodeAll)
         }
     }
 }

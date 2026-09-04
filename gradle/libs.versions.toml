@@ -1,295 +1,125 @@
 [versions]
-desugar_jdk_libs = "2.1.5"
-kotlin = "2.4.10"
-kotlin-compose-compiler = "2.4.10"
-kotlin-serialization = "1.11.0"
-kotlin-datetime = "0.8.0"
-kotlin-atomicfu = "0.33.0"
-kotlin-immutable = "0.5.2"
 agp = "9.4.0"
-compose-multiplatform = "1.12.0"
-compose-material3 = "1.12.0-alpha03"
-compose-material-icon = "1.7.3"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
 androidx-activityCompose = "1.13.0"
-androidx-webkit = "1.17.0"
-immersionbar = "3.3.3"
 androidx-lifecycle = "2.11.0"
-compose-adaptive = "1.3.0-beta02"
-navigation3 = "1.1.1"
-orbit-mvi = "12.0.1"
-cryptohash = "1.0.2"
-cryptorandom = "0.6.0"
-ktor = "3.5.2"
-ktorfit = "2.7.5"
 coil3 = "3.6.0"
-zoomimage = "1.7.0-alpha01"
-koin = "4.2.2"
-tinypinyin = "2.0.3"
-ksoup = "0.2.6"
-ksoup-html = "1.0.5"
-ksp = "2.3.11"
-compose-paging-common = "3.5.1"
-dataStore = "1.2.1"
-sqldelight = "2.3.2"
+compose-kuiver = "0.4.1"
+compose-material-icon = "1.7.3"
+compose-material3 = "1.12.0-alpha03"
+compose-multiplatform = "1.12.0"
 compose-webview = "2.0.3"
-vico = "2.5.2"
+cryptohash = "1.0.2"
+desugar_jdk_libs = "2.1.5"
+espressoCore = "3.7.0"
 file-kit = "0.15.0"
-kmp-zip = "0.15.0"
-krop = "0.2.0"
-kotlinx-coroutines = "1.11.0"
-confettikit = "0.9.0"
 junit = "4.13.2"
 junit-android = "1.3.0"
-espressoCore = "3.7.0"
-uiautomator = "2.4.0"
-benchmarkMacroJunit4 = "1.4.1"
-baselineprofile = "1.5.0-rc02"
-profileinstaller = "1.4.1"
-compose-markdown = "0.45.0"
-conscrypt = "2.6.3"
-compose-kuiver = "0.4.1"
+kmp-zip = "0.15.0"
+kotlin = "2.4.10"
+kotlin-atomicfu = "0.33.0"
+kotlin-compose-compiler = "2.4.10"
+kotlin-datetime = "0.8.0"
+kotlin-immutable = "0.5.2"
+kotlin-serialization = "1.11.0"
+kotlinx-coroutines = "1.11.0"
+ksoup = "0.2.6"
+ktor = "3.5.2"
 mediamp = "0.3.2"
-avifCoder = "3.0.0-alpha07"
+orbit-mvi = "12.0.1"
+zoomimage = "1.7.0-alpha01"
+dataStore = "1.2.1"
 
 [libraries]
-gradle-plugin-compose-compiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin-compose-compiler" }
-gradle-plugin-compose = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
 gradle-plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+gradle-plugin-compose = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
+gradle-plugin-compose-compiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin-compose-compiler" }
 gradle-plugin-serialization = { module = "org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
 
-# kotlinx
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlin-atomicfu" }
+kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-datetime" }
+kotlinx-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlin-immutable" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serialization" }
 kotlinx-serialization-proto = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlin-serialization" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-datetime" }
-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlin-atomicfu" }
-kotlinx-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlin-immutable" }
-kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
-
-# androidx
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit-android" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
-androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
-androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
-desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
-
-# compose-android
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit" }
-android-immersionbar = { module = "com.geyifeng.immersionbar:immersionbar", version.ref = "immersionbar" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit-android" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-# compose
-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
-compose-ui-graphics = { group = "org.jetbrains.compose.ui", name = "ui-graphics", version.ref = "compose-multiplatform" }
-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icon" }
-
-# compose-common
-compose-performance-annotation = { module = "androidx.performance:performance-annotation", version = "1.0.0-alpha01" }
-compose-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
-compose-lifecycle-viewmodel-navigation3 = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
-compose-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-compose-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
-compose-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "compose-adaptive" }
-compose-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "compose-adaptive" }
-compose-mvi = { module = "org.orbit-mvi:orbit-core", version.ref = "orbit-mvi" }
-compose-mvi-compose = { module = "org.orbit-mvi:orbit-compose", version.ref = "orbit-mvi" }
-compose-paging-common = { module = "androidx.paging:paging-common", version.ref = "compose-paging-common" }
-compose-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "compose-paging-common" }
-compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview" }
-compose-confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
-compose-markdown-core = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "compose-markdown" }
-compose-markdown-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "compose-markdown" }
 compose-kuiver = { module = "io.github.justdeko:kuiver", version.ref = "compose-kuiver" }
+compose-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icon" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 compose-mediamp-all = { module = "org.openani.mediamp:mediamp-all", version.ref = "mediamp" }
 compose-mediamp-runtime = { module = "org.openani.mediamp:mediamp-mpv-runtime", version.ref = "mediamp" }
+compose-mvi = { module = "org.orbit-mvi:orbit-core", version.ref = "orbit-mvi" }
+compose-mvi-compose = { module = "org.orbit-mvi:orbit-compose", version.ref = "orbit-mvi" }
+compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-graphics = { module = "org.jetbrains.compose.ui:ui-graphics", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview" }
 
-# cryptohash
-cryptohash = { module = "com.appmattus.crypto:cryptohash", version.ref = "cryptohash" }
-cryptorandom = { module = "org.kotlincrypto.random:crypto-rand", version.ref = "cryptorandom" }
-
-# ksoup
-ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
-ksoup-html = { module = "io.github.xiaoyvyv:compose-html", version.ref = "ksoup-html" }
-
-# coil3-common
-coil3 = { module = "io.coil-kt.coil3:coil", version.ref = "coil3" }
 coil3-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
-coil3-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref = "coil3" }
-coil3-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil3" }
-
-# coil3-android
-coil3-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coil3" }
-coil3-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil3" }
-coil3-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil3" }
-coil3-core = { module = "io.coil-kt.coil3:coil-core", version.ref = "coil3" }
-
-# zoom
-zoomimage = { module = "io.github.panpf.zoomimage:zoomimage-compose", version.ref = "zoomimage" }
-zoomimage-coil3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoomimage" }
-zoomimage-resources = { module = "io.github.panpf.zoomimage:zoomimage-compose-resources", version.ref = "zoomimage" }
-
-# tinypinyin
-tinypinyin-core = { module = "com.github.promeg:tinypinyin", version.ref = "tinypinyin" }
-tinypinyin-android = { module = "com.github.promeg:tinypinyin-lexicons-android-cncity", version.ref = "tinypinyin" }
-tinypinyin-jvm = { module = "com.github.promeg:tinypinyin-lexicons-java-cncity", version.ref = "tinypinyin" }
-
-# koin
-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
-koin-core = { module = "io.insert-koin:koin-core" }
-koin-android = { module = "io.insert-koin:koin-android" }
-koin-compose = { module = "io.insert-koin:koin-compose" }
-koin-compose-navigation3 = { module = "io.insert-koin:koin-compose-navigation3" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
-
-# ktor-platform
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
-
-# TLS
-conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscrypt" }
-conscrypt-openjdk = { module = "org.conscrypt:conscrypt-openjdk", version.ref = "conscrypt" }
-
-# ktor-common
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+cryptohash = { module = "com.appmattus.crypto:cryptohash", version.ref = "cryptohash" }
+filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "file-kit" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "file-kit" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "file-kit" }
+kmp-zip = { module = "no.synth:kmp-zip", version.ref = "kmp-zip" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
-ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-
-# ktorfit
-ktorfit-converters-flow = { module = "de.jensklingenberg.ktorfit:ktorfit-converters-flow", version.ref = "ktorfit" }
-ktorfit-converters-call = { module = "de.jensklingenberg.ktorfit:ktorfit-converters-call", version.ref = "ktorfit" }
-ktorfit-converters-response = { module = "de.jensklingenberg.ktorfit:ktorfit-converters-response", version.ref = "ktorfit" }
-ktorfit-lib = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }
+zoomimage-coil3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoomimage" }
 
 # DataStore
 androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "dataStore" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
 androidx-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "dataStore" }
 
-# Sqldelight
-sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
-sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
-sqldelight-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
-sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
-
-# Vico
-vico-multiplatform = { group = "com.patrykandpatrick.vico", name = "multiplatform", version.ref = "vico" }
-vico-multiplatform-m3 = { group = "com.patrykandpatrick.vico", name = "multiplatform-m3", version.ref = "vico" }
-
-# FileKit
-filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "file-kit" }
-filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "file-kit" }
-filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "file-kit" }
-kmp-zip = { module = "no.synth:kmp-zip", version.ref = "kmp-zip" }
-
-krop = { module = "com.attafitamim.krop:core", version.ref = "krop" }
-krop-file = { module = "com.attafitamim.krop:extensions-filekit", version.ref = "krop" }
-
-avif-coder = { module = "io.github.awxkee:avif-coder-coil", version.ref = "avifCoder" }
-
-
 [bundles]
-gradle-plugins = [
-    "gradle-plugin-agp",
-    "gradle-plugin-compose",
-    "gradle-plugin-compose-compiler",
-    "gradle-plugin-serialization"
-]
-compose-common = [
-    "compose-material3",
-    "compose-performance-annotation",
-    "compose-navigation3-ui",
-    "compose-lifecycle-viewmodel",
-    "compose-lifecycle-viewmodel-navigation3",
-    "compose-lifecycle-runtime",
-    "compose-mvi",
-    "compose-mvi-compose",
-    "compose-adaptive",
-    "compose-adaptive-navigation3",
-    "compose-paging-common",
-    "compose-paging-compose",
-    "compose-webview",
-    "compose-confettikit",
-    "compose-kuiver",
-    "compose-mediamp-all",
-]
-kotlinx = [
-    "kotlinx-atomicfu",
-    "kotlinx-serialization-json",
-    "kotlinx-serialization-proto",
-    "kotlinx-datetime",
-    "kotlinx-immutable"
-]
-coil3-android = [
-    "coil3-gif",
-    "coil3-svg",
-    "coil3-core",
-    "coil3-video"
-]
-coil3-common = [
-    "coil3",
-    "coil3-network",
-    "coil3-compose",
-    "coil3-compose-core"
-]
-zoomimage = [
-    "zoomimage",
-    "zoomimage-coil3",
-    "zoomimage-resources"
-]
-koin-common = [
-    "koin-core",
-    "koin-compose",
-    "koin-compose-navigation3",
-    "koin-compose-viewmodel",
-]
-ktor-common = [
-    "ktor-client-core",
-    "ktor-client-auth",
-    "ktor-client-logging",
-    "ktor-client-encoding",
-    "ktor-client-content-negotiation",
-    "ktor-serialization-kotlinx-json",
-]
-ktorfit-common = [
-    "ktorfit-lib",
-    "ktorfit-converters-call",
-    "ktorfit-converters-flow",
-    "ktorfit-converters-response",
-]
-vico = [
-    "vico-multiplatform",
-    "vico-multiplatform-m3",
+datastore = [
+    "androidx-datastore-core-okio",
+    "androidx-datastore-preferences",
+    "androidx-datastore-preferences-core",
 ]
 file-kit = [
     "filekit-coil",
     "filekit-core",
     "filekit-dialogs-compose",
 ]
-krop = [
-    "krop",
-    "krop-file",
+gradle-plugins = [
+    "gradle-plugin-agp",
+    "gradle-plugin-compose",
+    "gradle-plugin-compose-compiler",
+    "gradle-plugin-serialization",
 ]
-markdown = [
-    "compose-markdown-core",
-    "compose-markdown-m3"
+kotlinx = [
+    "kotlinx-atomicfu",
+    "kotlinx-datetime",
+    "kotlinx-immutable",
+    "kotlinx-serialization-json",
+    "kotlinx-serialization-proto",
 ]
-
-[plugins]
-googleKsp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kotlinKtorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
-baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+ktor-common = [
+    "ktor-client-auth",
+    "ktor-client-content-negotiation",
+    "ktor-client-core",
+    "ktor-client-encoding",
+    "ktor-client-logging",
+    "ktor-serialization-kotlinx-json",
+]

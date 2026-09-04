@@ -1,4 +1,5 @@
 @file:Suppress("UnstableApiUsage")
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -25,6 +26,7 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://jogamp.org/deployment/maven")
     }
 }
 
@@ -40,3 +42,18 @@ include(":shared")
 include(":workflow-core")
 include(":workflow-ui")
 include(":workflow-platform")
+include(":workflow-node-base")
+include(":workflow-node-control")
+include(":workflow-node-data")
+include(":workflow-node-codec")
+include(":workflow-node-html")
+include(":workflow-node-crypto")
+include(":workflow-node-io")
+include(":workflow-node-bilibili")
+include(":workflow-node-all")
+include(":workflow-node-testkit")
+include(":workflow-ui-side-effect")
+include(":workflow-ui-image")
+include(":workflow-ui-video")
+include(":workflow-ui-webview")
+include(":workflow-ui-all")

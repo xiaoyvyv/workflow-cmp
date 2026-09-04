@@ -55,18 +55,15 @@ kotlin {
     sourceSets {
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.ktor.client.mock)
         }
 
         commonMain.dependencies {
-            implementation(project.dependencies.platform(libs.koin.bom))
-            implementation(libs.bundles.koin.common)
             implementation(libs.bundles.ktor.common)
-            implementation(libs.bundles.file.kit)
             implementation(libs.bundles.kotlinx)
         }
 
         androidMain.dependencies {
-            implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
         }
 

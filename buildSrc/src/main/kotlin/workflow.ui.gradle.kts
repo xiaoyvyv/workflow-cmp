@@ -30,10 +30,6 @@ kotlin {
             implementation(libs.compose.resources)
         }
 
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-        }
-
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             runtimeOnly(libs.compose.mediamp.runtime)
@@ -42,7 +38,6 @@ kotlin {
         all {
             languageSettings {
                 optIn("kotlin.io.encoding.ExperimentalEncodingApi")
-                optIn("org.koin.core.annotation.KoinExperimentalAPI")
                 optIn("kotlin.time.ExperimentalTime")
                 optIn("kotlinx.cinterop.ExperimentalForeignApi")
                 optIn("kotlinx.coroutines.FlowPreview")

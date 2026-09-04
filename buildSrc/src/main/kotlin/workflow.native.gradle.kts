@@ -1,6 +1,5 @@
 @file:Suppress("SpellCheckingInspection", "UnstableApiUsage")
 
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 
 
