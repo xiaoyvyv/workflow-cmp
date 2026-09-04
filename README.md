@@ -1,7 +1,82 @@
-# workflow-cmp
+<p align="center">
+  <img src="docs/workflow_logo.svg" width="112" height="112" alt="workflow-cmp Logo" />
+</p>
 
-`workflow-cmp` 是基于 **Kotlin Multiplatform (KMP)** 与 **Compose Multiplatform (CMP)** 构建的高性能、声明式工作流编排与执行引擎套件。项目基于有向无环图（DAG）模型，将流程控制、数据转换、网络请求、UI
-交互、音视频播放及跨平台系统动作抽象为结构化协议，支持多平台（Android、Desktop JVM、iOS）统一调度与交互渲染。
+<h1 align="center">workflow-cmp</h1>
+
+<p align="center">
+  <strong>基于 Kotlin Multiplatform 与 Compose Multiplatform 的下一代高性能、声明式 DAG 工作流编排与跨平台交互引擎</strong>
+</p>
+
+<p align="center">
+  将流程控制、数据转换、网络请求、UI 交互与音视频播放抽象为结构化协议，在 Android、iOS 与 Desktop (JVM) 实现多端统一调度与响应式渲染
+</p>
+
+<p align="center">
+  <a href="#1-项目架构与模块划分">项目架构</a> •
+  <a href="#2-执行模型与调度内核">调度内核</a> •
+  <a href="#3-模板与表达式引擎">表达式引擎</a> •
+  <a href="#4-内置节点参考规范">节点字典</a> •
+  <a href="#6-接入与工程开发指南">快速接入</a>
+</p>
+
+<p align="center">
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin Version" /></a>
+  <a href="https://www.jetbrains.com/lp/compose-multiplatform/"><img src="https://img.shields.io/badge/Compose_Multiplatform-1.12.0-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose Multiplatform" /></a>
+  <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Platform-Android_24+-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android Support" /></a>
+  <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/Platform-iOS_Arm64-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS Support" /></a>
+  <a href="https://openjdk.org/"><img src="https://img.shields.io/badge/Platform-Desktop_JVM-EA4335?style=flat-square&logo=openjdk&logoColor=white" alt="Desktop JVM" /></a>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square" alt="License" /></a>
+  <img src="https://img.shields.io/badge/Architecture-DAG_Orchestrator-8B5CF6?style=flat-square" alt="DAG Architecture" />
+  <img src="https://img.shields.io/badge/Concurrency-Coroutines_%26_Flow-F59E0B?style=flat-square" alt="Coroutines and Flow" />
+  <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Build & Tests" />
+</p>
+
+---
+
+### 🌟 核心特性一览
+
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h4>⚡ 现代化 DAG 调度内核</h4>
+      <ul>
+        <li><b>拓扑排序驱动</b>：自动检测循环依赖与死锁，按拓扑序严格调度</li>
+        <li><b>并发分支与合流 (Fork & Join)</b>：天然支持多任务并行触发与多通道屏障合流</li>
+        <li><b>响应式数据流</b>：全面基于 Kotlin Coroutines 与 Flow，状态事件全生命周期可监听</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h4>🌍 极致多端统一 (KMP / CMP)</h4>
+      <ul>
+        <li><b>一套逻辑，三端运行</b>：一套工作流在 Android、iOS 与 Desktop (JVM) 逻辑完全一致</li>
+        <li><b>平台抽象隔离</b>：将剪贴板、振动、通知、系统跳转等差异解耦至宿主抽象层</li>
+        <li><b>环境状态沙箱</b>：内置安全变量隔离机制与跨任务并发隔离能力</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h4>🎨 开箱即用的专业 Compose UI 交互</h4>
+      <ul>
+        <li><b>专业漫画阅读器</b>：双布局自由切换（水平翻页 + 竖直条漫上下 3f 倍预渲染）与手势缩放</li>
+        <li><b>全功能播放器与浏览器</b>：内置跨平台视频画面脚手架与 Cookie 动态同步弹窗</li>
+        <li><b>丰富系统交互</b>：单选/多选列表弹窗、文本输入、二次确认与生命周期进度条</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h4>🧩 强大的表达式引擎与丰富节点库</h4>
+      <ul>
+        <li><b>内联语法求值</b>：支持三元条件 <code>? :</code>、Elvis 兜底 <code>?:</code>、逻辑运算与成员方法调用</li>
+        <li><b>18 大类节点全覆盖</b>：流程、控制、循环、JSON、对象、数组、文本、正则、加解密、网络等</li>
+        <li><b>零门槛定制扩展</b>：标准的 <code>ActionNodeDefinition</code> 声明式插拔接口</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ---
 

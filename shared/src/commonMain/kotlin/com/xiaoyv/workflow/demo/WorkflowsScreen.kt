@@ -38,6 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
+import coil3.request.crossfade
 import com.xiaoyv.workflow.demo.business.WorkflowSamples
 import com.xiaoyv.workflow.demo.business.component.ActionWorkflowNodeList
 import com.xiaoyv.workflow.demo.support.BgmTopAppBar
@@ -55,6 +61,7 @@ import com.xiaoyv.workflow.ui.all.WorkflowDefaultSideEffectHost
 import com.xiaoyv.workflow.ui.core.rememberWorkflowSideEffectHostState
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.launch
+import okio.FileSystem
 
 @Composable
 fun WorkflowsRoute() {
@@ -75,6 +82,28 @@ fun WorkflowsRoute() {
     val effectHostState = rememberWorkflowSideEffectHostState()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .crossfade(true)
+            .components {
+                add(coil3.network.ktor3.KtorNetworkFetcherFactory())
+            }
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.3)
+                    .strongReferencesEnabled(true)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "image_cache_workflow")
+                    .maxSizeBytes(512L * 1024 * 1024)
+                    .build()
+            }
+            .build()
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.uiEffect.collect { sideEffect ->

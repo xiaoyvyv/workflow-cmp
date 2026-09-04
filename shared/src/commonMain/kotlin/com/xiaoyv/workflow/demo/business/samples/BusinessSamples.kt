@@ -17,7 +17,9 @@ import com.xiaoyv.workflow.model.spec.ActionJsonConfigKey
 import com.xiaoyv.workflow.model.spec.ActionLoopConfigKey
 import com.xiaoyv.workflow.model.spec.ActionMathConfigKey
 import com.xiaoyv.workflow.model.spec.ActionNodeType
+import com.xiaoyv.workflow.model.spec.ActionObjectConfigKey
 import com.xiaoyv.workflow.model.spec.ActionOpenUrlConfigKey
+import com.xiaoyv.workflow.model.spec.ActionSelectDialogConfigKey
 import com.xiaoyv.workflow.model.spec.ActionSyncCookieConfigKey
 import com.xiaoyv.workflow.model.spec.ActionTextConfigKey
 import com.xiaoyv.workflow.model.spec.ActionToastConfigKey
@@ -580,9 +582,10 @@ internal object BusinessSamples {
     private fun searchMangaDexAndPreviewImages(): ActionWorkflow = workflow(
         id = "search_mangadex_manga_and_preview",
         name = "测试：MangaDex 漫画搜索与章节图片预览",
-        description = "搜索 MangaDex 漫画，获取目标章节并拼接高清图片 URL 列表后调起全屏图片预览。",
+        description = "搜索 MangaDex 漫画，让用户自主选择漫画与目标章节，拼接完整高清图片 URL 列表后调起全屏图片预览。",
         capabilities = setOf(
             ActionCapability.INPUT_DIALOG,
+            ActionCapability.SELECT_DIALOG,
             ActionCapability.NETWORK,
             ActionCapability.IMAGE_PREVIEW,
         ),
@@ -603,26 +606,102 @@ internal object BusinessSamples {
                 ActionNodeType.HTTP_REQUEST,
                 "搜索 MangaDex 漫画",
                 config(
-                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga?title=\${steps.input_keyword.keyword}",
+                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga?title=\${steps.input_keyword.keyword}&limit=10",
                     ActionHttpConfigKey.METHOD to "GET",
                 ),
             ),
             node(
-                "extract_manga_id",
+                "extract_manga_list",
                 ActionNodeType.JSON_EXTRACT,
-                "提取漫画 ID",
+                "提取漫画列表",
                 config(
                     ActionJsonConfigKey.SOURCE to "\${steps.search_manga.body}",
-                    ActionJsonConfigKey.PATH to "$.data.0.id",
-                    ActionJsonConfigKey.OUTPUT_KEY to "mangaId",
+                    ActionJsonConfigKey.PATH to "$.data",
+                    ActionJsonConfigKey.OUTPUT_KEY to "mangaList",
                 ),
             ),
             node(
-                "is_manga_found",
-                ActionNodeType.CONDITION_IS_NULL,
-                "是否找到漫画",
+                "check_manga_empty",
+                ActionNodeType.CONDITION_IS_EMPTY,
+                "漫画列表是否为空",
                 config(
-                    ActionControlConfigKey.VALUE to "\${steps.extract_manga_id.mangaId}",
+                    ActionControlConfigKey.VALUE to "\${steps.extract_manga_list.mangaList}",
+                ),
+            ),
+            node(
+                "init_manga_options",
+                ActionNodeType.SET_VARIABLE,
+                "初始化漫画选项列表",
+                config(
+                    ActionDataConfigKey.KEY to "mangaOptions",
+                    ActionDataConfigKey.VALUE to JsonArray(emptyList()),
+                ),
+            ),
+            node(
+                "loop_manga",
+                ActionNodeType.LOOP_FOR_EACH,
+                "遍历漫画列表",
+                config(
+                    ActionLoopConfigKey.ITEMS to "\${steps.extract_manga_list.mangaList}",
+                ),
+            ),
+            node(
+                "create_manga_title_obj",
+                ActionNodeType.OBJECT_SET,
+                "设置漫画选项标题",
+                config(
+                    ActionObjectConfigKey.OBJECT to JsonObject(emptyMap()),
+                    ActionObjectConfigKey.KEY to "title",
+                    ActionObjectConfigKey.VALUE to "\${loop.item.attributes.title.ja_ro ?: loop.item.id}",
+                    ActionObjectConfigKey.OUTPUT_KEY to "optWithTitle",
+                ),
+            ),
+            node(
+                "create_manga_option",
+                ActionNodeType.OBJECT_SET,
+                "设置漫画选项 ID",
+                config(
+                    ActionObjectConfigKey.OBJECT to "\${steps.create_manga_title_obj.optWithTitle}",
+                    ActionObjectConfigKey.KEY to "value",
+                    ActionObjectConfigKey.VALUE to "\${loop.item.id}",
+                    ActionObjectConfigKey.OUTPUT_KEY to "option",
+                ),
+            ),
+            node(
+                "append_manga_option",
+                ActionNodeType.ARRAY_APPEND,
+                "追加到漫画选项列表",
+                config(
+                    ActionArrayConfigKey.VALUES to "\${vars.mangaOptions}",
+                    ActionArrayConfigKey.VALUE to "\${steps.create_manga_option.option}",
+                    ActionArrayConfigKey.OUTPUT_KEY to "mangaOptions",
+                ),
+            ),
+            node(
+                "save_manga_options",
+                ActionNodeType.SET_VARIABLE,
+                "更新漫画选项变量",
+                config(
+                    ActionDataConfigKey.KEY to "mangaOptions",
+                    ActionDataConfigKey.VALUE to "\${steps.append_manga_option.mangaOptions}",
+                ),
+            ),
+            node(
+                "next_manga",
+                ActionNodeType.LOOP_NEXT,
+                "继续下一部漫画",
+                config(ActionLoopConfigKey.LOOP_ID to "loop_manga"),
+            ),
+            node(
+                "select_manga",
+                ActionNodeType.UI_SELECT_DIALOG,
+                "选择目标漫画",
+                config(
+                    ActionSelectDialogConfigKey.TITLE to "请选择漫画",
+                    ActionSelectDialogConfigKey.SUBTITLE to "搜索到以下漫画，请选择要阅读的一部",
+                    ActionSelectDialogConfigKey.OPTIONS to "\${vars.mangaOptions}",
+                    ActionSelectDialogConfigKey.IS_MULTI_SELECT to false,
+                    ActionSelectDialogConfigKey.OUTPUT_KEY to "mangaId",
                 ),
             ),
             node(
@@ -630,18 +709,111 @@ internal object BusinessSamples {
                 ActionNodeType.HTTP_REQUEST,
                 "获取漫画章节列表",
                 config(
-                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga/\${steps.extract_manga_id.mangaId}/feed",
+                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga/\${steps.select_manga.mangaId}/feed?order[chapter]=asc&limit=100",
                     ActionHttpConfigKey.METHOD to "GET",
                 ),
             ),
             node(
-                "extract_chapter_id",
+                "extract_chapter_list",
                 ActionNodeType.JSON_EXTRACT,
-                "提取首个章节 ID",
+                "提取章节列表",
                 config(
                     ActionJsonConfigKey.SOURCE to "\${steps.get_chapters.body}",
-                    ActionJsonConfigKey.PATH to "$.data.0.id",
-                    ActionJsonConfigKey.OUTPUT_KEY to "chapterId",
+                    ActionJsonConfigKey.PATH to "$.data",
+                    ActionJsonConfigKey.OUTPUT_KEY to "chapterList",
+                ),
+            ),
+            node(
+                "check_chapter_empty",
+                ActionNodeType.CONDITION_IS_EMPTY,
+                "章节列表是否为空",
+                config(
+                    ActionControlConfigKey.VALUE to "\${steps.extract_chapter_list.chapterList}",
+                ),
+            ),
+            node(
+                "init_chapter_options",
+                ActionNodeType.SET_VARIABLE,
+                "初始化章节选项列表",
+                config(
+                    ActionDataConfigKey.KEY to "chapterOptions",
+                    ActionDataConfigKey.VALUE to JsonArray(emptyList()),
+                ),
+            ),
+            node(
+                "loop_chapters",
+                ActionNodeType.LOOP_FOR_EACH,
+                "遍历章节列表",
+                config(
+                    ActionLoopConfigKey.ITEMS to "\${steps.extract_chapter_list.chapterList}",
+                ),
+            ),
+            node(
+                "build_chapter_title",
+                ActionNodeType.TEMPLATE,
+                "生成章节标题",
+                config(
+                    ActionDataConfigKey.TEMPLATE to "第 \${loop.item.attributes.chapter ?: (loop.index + 1)} 话 \${loop.item.attributes.title ?: ''} [\${loop.item.attributes.translatedLanguage ?: '未知'}]",
+                    ActionDataConfigKey.OUTPUT_KEY to "chapterTitle",
+                ),
+            ),
+            node(
+                "create_chapter_title_obj",
+                ActionNodeType.OBJECT_SET,
+                "设置章节选项标题",
+                config(
+                    ActionObjectConfigKey.OBJECT to JsonObject(emptyMap()),
+                    ActionObjectConfigKey.KEY to "title",
+                    ActionObjectConfigKey.VALUE to "\${steps.build_chapter_title.chapterTitle}",
+                    ActionObjectConfigKey.OUTPUT_KEY to "optWithTitle",
+                ),
+            ),
+            node(
+                "create_chapter_option",
+                ActionNodeType.OBJECT_SET,
+                "设置章节选项 ID",
+                config(
+                    ActionObjectConfigKey.OBJECT to "\${steps.create_chapter_title_obj.optWithTitle}",
+                    ActionObjectConfigKey.KEY to "value",
+                    ActionObjectConfigKey.VALUE to "\${loop.item.id}",
+                    ActionObjectConfigKey.OUTPUT_KEY to "option",
+                ),
+            ),
+            node(
+                "append_chapter_option",
+                ActionNodeType.ARRAY_APPEND,
+                "追加到章节选项列表",
+                config(
+                    ActionArrayConfigKey.VALUES to "\${vars.chapterOptions}",
+                    ActionArrayConfigKey.VALUE to "\${steps.create_chapter_option.option}",
+                    ActionArrayConfigKey.OUTPUT_KEY to "chapterOptions",
+                ),
+            ),
+            node(
+                "save_chapter_options",
+                ActionNodeType.SET_VARIABLE,
+                "更新章节选项变量",
+                config(
+                    ActionDataConfigKey.KEY to "chapterOptions",
+                    ActionDataConfigKey.VALUE to "\${steps.append_chapter_option.chapterOptions}",
+                ),
+            ),
+            node(
+                "next_chapter",
+                ActionNodeType.LOOP_NEXT,
+                "继续下一章节",
+                config(ActionLoopConfigKey.LOOP_ID to "loop_chapters"),
+            ),
+            node(
+                "select_chapter",
+                ActionNodeType.UI_SELECT_DIALOG,
+                "选择要阅读的章节",
+                config(
+                    ActionSelectDialogConfigKey.TITLE to "请选择章节",
+                    ActionSelectDialogConfigKey.SUBTITLE to "请选择要预览图片的章节",
+                    ActionSelectDialogConfigKey.OPTIONS to "\${vars.chapterOptions}",
+                    ActionSelectDialogConfigKey.IS_MULTI_SELECT to false,
+                    ActionSelectDialogConfigKey.OUTPUT_KEY to "chapterId",
                 ),
             ),
             node(
@@ -649,7 +821,7 @@ internal object BusinessSamples {
                 ActionNodeType.HTTP_REQUEST,
                 "获取章节服务器信息",
                 config(
-                    ActionHttpConfigKey.URL to "https://api.mangadex.org/at-home/server/\${steps.extract_chapter_id.chapterId}",
+                    ActionHttpConfigKey.URL to "https://api.mangadex.org/at-home/server/\${steps.select_chapter.chapterId}",
                     ActionHttpConfigKey.METHOD to "GET",
                 ),
             ),
@@ -749,18 +921,48 @@ internal object BusinessSamples {
                 "提示未找到漫画",
                 config(ActionToastConfigKey.MESSAGE to "未找到匹配的 MangaDex 漫画"),
             ),
+            node(
+                "show_no_chapters",
+                ActionNodeType.SHOW_TOAST,
+                "提示未找到章节",
+                config(ActionToastConfigKey.MESSAGE to "该漫画暂无可用章节"),
+            ),
             node("end_after_preview", ActionNodeType.FLOW_END, "预览后结束"),
             node("end_after_no_manga", ActionNodeType.FLOW_END, "无漫画后结束"),
+            node("end_after_no_chapters", ActionNodeType.FLOW_END, "无章节后结束"),
         ),
         edges = listOf(
             edge("start", ActionControlPortId.NEXT, "input_keyword"),
             edge("input_keyword", ActionControlPortId.SUCCESS, "search_manga"),
-            edge("search_manga", ActionControlPortId.SUCCESS, "extract_manga_id"),
-            edge("extract_manga_id", ActionControlPortId.NEXT, "is_manga_found"),
-            edge("is_manga_found", ActionControlPortId.TRUE, "show_no_manga"),
-            edge("is_manga_found", ActionControlPortId.FALSE, "get_chapters"),
-            edge("get_chapters", ActionControlPortId.SUCCESS, "extract_chapter_id"),
-            edge("extract_chapter_id", ActionControlPortId.NEXT, "get_chapter_server"),
+            edge("search_manga", ActionControlPortId.SUCCESS, "extract_manga_list"),
+            edge("extract_manga_list", ActionControlPortId.NEXT, "check_manga_empty"),
+            edge("check_manga_empty", ActionControlPortId.TRUE, "show_no_manga"),
+            edge("show_no_manga", ActionControlPortId.SUCCESS, "end_after_no_manga"),
+            edge("check_manga_empty", ActionControlPortId.FALSE, "init_manga_options"),
+            edge("init_manga_options", ActionControlPortId.NEXT, "loop_manga"),
+            edge("loop_manga", ActionControlPortId.BODY, "create_manga_title_obj"),
+            edge("create_manga_title_obj", ActionControlPortId.NEXT, "create_manga_option"),
+            edge("create_manga_option", ActionControlPortId.NEXT, "append_manga_option"),
+            edge("append_manga_option", ActionControlPortId.NEXT, "save_manga_options"),
+            edge("save_manga_options", ActionControlPortId.NEXT, "next_manga"),
+            edge("loop_manga", ActionControlPortId.COMPLETED, "select_manga"),
+            edge("select_manga", ActionControlPortId.SUCCESS, "get_chapters"),
+            edge("select_manga", ActionControlPortId.FAILURE, "end_after_no_manga"),
+            edge("get_chapters", ActionControlPortId.SUCCESS, "extract_chapter_list"),
+            edge("extract_chapter_list", ActionControlPortId.NEXT, "check_chapter_empty"),
+            edge("check_chapter_empty", ActionControlPortId.TRUE, "show_no_chapters"),
+            edge("show_no_chapters", ActionControlPortId.SUCCESS, "end_after_no_chapters"),
+            edge("check_chapter_empty", ActionControlPortId.FALSE, "init_chapter_options"),
+            edge("init_chapter_options", ActionControlPortId.NEXT, "loop_chapters"),
+            edge("loop_chapters", ActionControlPortId.BODY, "build_chapter_title"),
+            edge("build_chapter_title", ActionControlPortId.NEXT, "create_chapter_title_obj"),
+            edge("create_chapter_title_obj", ActionControlPortId.NEXT, "create_chapter_option"),
+            edge("create_chapter_option", ActionControlPortId.NEXT, "append_chapter_option"),
+            edge("append_chapter_option", ActionControlPortId.NEXT, "save_chapter_options"),
+            edge("save_chapter_options", ActionControlPortId.NEXT, "next_chapter"),
+            edge("loop_chapters", ActionControlPortId.COMPLETED, "select_chapter"),
+            edge("select_chapter", ActionControlPortId.SUCCESS, "get_chapter_server"),
+            edge("select_chapter", ActionControlPortId.FAILURE, "end_after_no_chapters"),
             edge("get_chapter_server", ActionControlPortId.SUCCESS, "extract_base_url"),
             edge("extract_base_url", ActionControlPortId.NEXT, "extract_hash"),
             edge("extract_hash", ActionControlPortId.NEXT, "extract_filenames"),
@@ -772,7 +974,6 @@ internal object BusinessSamples {
             edge("save_image_list", ActionControlPortId.NEXT, "next_filename"),
             edge("loop_filenames", ActionControlPortId.COMPLETED, "preview_images"),
             edge("preview_images", ActionControlPortId.SUCCESS, "end_after_preview"),
-            edge("show_no_manga", ActionControlPortId.SUCCESS, "end_after_no_manga"),
         ),
     )
 

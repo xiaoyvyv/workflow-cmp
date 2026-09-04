@@ -68,6 +68,7 @@ compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-pre
 compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview" }
 
 coil3-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
+coil3-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil3" }
 cryptohash = { module = "com.appmattus.crypto:cryptohash", version.ref = "cryptohash" }
 filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "file-kit" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "file-kit" }
