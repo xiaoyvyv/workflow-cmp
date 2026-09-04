@@ -1,7 +1,6 @@
 package com.xiaoyv.workflow.platform.room
 
 import com.xiaoyv.workflow.platform.room.cookie.RoomActionCookiesStorage
-import com.xiaoyv.workflow.platform.room.cookie.WorkflowCookieDatabaseFactory
 import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.util.date.GMTDate
@@ -17,7 +16,7 @@ import kotlin.test.assertTrue
 class RoomActionCookiesStorageTest {
 
     private val testDbPath = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "test_cookies_${Random.nextLong().toString(16)}.db"
-    private val database = WorkflowCookieDatabaseFactory.createDatabase(testDbPath.toString())
+    private val database = WorkflowRoomDatabaseFactory.createDatabase(testDbPath.toString())
     private val storage = RoomActionCookiesStorage(database)
 
     @AfterTest

@@ -1,6 +1,6 @@
 plugins {
     id("workflow.library")
-    id("androidx.room")
+    id("androidx.room3")
     id("com.google.devtools.ksp")
 }
 
@@ -12,18 +12,14 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.workflowCore)
-            api(libs.androidx.room.runtime)
+            api(libs.androidx.room3.runtime)
             api(libs.androidx.sqlite.bundled)
             api(libs.bundles.file.kit)
-        }
-
-        androidMain.dependencies {
-            implementation(libs.androidx.room3.sqlite.wrapper)
         }
     }
 }
 
-room {
+room3 {
     schemaDirectory("$projectDir/schemas")
 }
 

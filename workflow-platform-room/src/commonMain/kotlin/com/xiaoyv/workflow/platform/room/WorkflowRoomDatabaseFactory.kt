@@ -1,6 +1,7 @@
-package com.xiaoyv.workflow.platform.room.cookie
+package com.xiaoyv.workflow.platform.room
 
-import androidx.room.RoomDatabase
+import androidx.room3.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.div
@@ -11,23 +12,25 @@ import kotlinx.coroutines.IO
 import okio.FileSystem
 import okio.SYSTEM
 
-expect fun createPlatformDatabaseBuilder(dbPath: String): RoomDatabase.Builder<WorkflowCookieDatabase>
-expect fun createPlatformInMemoryDatabaseBuilder(): RoomDatabase.Builder<WorkflowCookieDatabase>
+expect fun createPlatformDatabaseBuilder(dbPath: String): RoomDatabase.Builder<WorkflowRoomDatabase>
+expect fun createPlatformInMemoryDatabaseBuilder(): RoomDatabase.Builder<WorkflowRoomDatabase>
 
-object WorkflowCookieDatabaseFactory {
+object WorkflowRoomDatabaseFactory {
 
     fun createDatabase(
         dbPath: String = defaultDbPath(),
-    ): WorkflowCookieDatabase {
+    ): WorkflowRoomDatabase {
         return createPlatformDatabaseBuilder(dbPath)
+            .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
             .fallbackToDestructiveMigration(true)
             .fallbackToDestructiveMigrationOnDowngrade(true)
             .build()
     }
 
-    fun createInMemoryDatabase(): WorkflowCookieDatabase {
+    fun createInMemoryDatabase(): WorkflowRoomDatabase {
         return createPlatformInMemoryDatabaseBuilder()
+            .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
             .fallbackToDestructiveMigration(true)
             .fallbackToDestructiveMigrationOnDowngrade(true)
@@ -37,12 +40,12 @@ object WorkflowCookieDatabaseFactory {
     private fun defaultDbPath(): String {
         return runCatching {
             val dir = (FileKit.filesDir / "workflow").apply { createDirectories() }
-            val file = dir / "workflow_cookies.db"
+            val file = dir / "workflow.db"
             file.path
         }.getOrElse {
             val dir = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "workflow"
             FileSystem.SYSTEM.createDirectories(dir)
-            (dir / "workflow_cookies.db").toString()
+            (dir / "workflow.db").toString()
         }
     }
 }

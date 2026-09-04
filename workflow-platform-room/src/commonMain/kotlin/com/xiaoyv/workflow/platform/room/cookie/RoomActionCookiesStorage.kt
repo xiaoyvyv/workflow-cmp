@@ -1,5 +1,7 @@
 package com.xiaoyv.workflow.platform.room.cookie
 
+import com.xiaoyv.workflow.platform.room.WorkflowRoomDatabase
+import com.xiaoyv.workflow.platform.room.WorkflowRoomDatabaseFactory
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.client.plugins.cookies.fillDefaults
 import io.ktor.client.plugins.cookies.matches
@@ -20,7 +22,7 @@ import kotlinx.coroutines.sync.withLock
  * 5. **丰富的管理接口**：提供获取全部、按条件清理、批量导入/覆盖等完备管理能力。
  */
 class RoomActionCookiesStorage(
-    private val database: WorkflowCookieDatabase = defaultDatabase,
+    private val database: WorkflowRoomDatabase = defaultDatabase,
 ) : CookiesStorage {
 
     private val dao = database.cookieDao()
@@ -119,7 +121,7 @@ class RoomActionCookiesStorage(
 
     companion object {
         private val defaultDatabase by lazy {
-            WorkflowCookieDatabaseFactory.createDatabase()
+            WorkflowRoomDatabaseFactory.createDatabase()
         }
     }
 }
