@@ -139,6 +139,10 @@ internal object BilibiliUtils {
         }
     }
 
+    private fun MutableMap<String, String>.putIfAbsent(key: String, value: String) {
+        if (!containsKey(key)) put(key, value)
+    }
+
     internal fun randomQueryViewId(): String = buildString(BILIBILI_QUERY_VIEW_ID_LENGTH) {
         repeat(BILIBILI_QUERY_VIEW_ID_LENGTH) {
             append(BILIBILI_QUERY_VIEW_ID_CHARACTERS.random())

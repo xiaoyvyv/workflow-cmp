@@ -11,16 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.xiaoyv.workflow.ui.WorkflowSideEffectHostState
+import com.xiaoyv.workflow.ui.core.WorkflowConfirmAlertDialog
+import com.xiaoyv.workflow.ui.core.WorkflowInputAlertDialog
+import com.xiaoyv.workflow.ui.core.WorkflowProgressAlertDialog
+import com.xiaoyv.workflow.ui.core.WorkflowSelectAlertDialog
+import com.xiaoyv.workflow.ui.core.WorkflowSideEffectHost
+import com.xiaoyv.workflow.ui.core.WorkflowSideEffectHostState
 import com.xiaoyv.workflow.ui.image.WorkflowImagePreviewPage
-import com.xiaoyv.workflow.ui.sideeffect.WorkflowConfirmAlertDialog
-import com.xiaoyv.workflow.ui.sideeffect.WorkflowInputAlertDialog
-import com.xiaoyv.workflow.ui.sideeffect.WorkflowProgressAlertDialog
-import com.xiaoyv.workflow.ui.sideeffect.WorkflowSelectAlertDialog
-import com.xiaoyv.workflow.ui.sideeffect.WorkflowSideEffectHost
 import com.xiaoyv.workflow.ui.video.WorkflowVideoPreviewPage
-import com.xiaoyv.workflow.ui.webview.WorkflowCookieSyncBottomSheet
-import com.xiaoyv.workflow.ui.webview.WorkflowWebCookie
+import com.xiaoyv.workflow.ui.webview.WorkflowSyncCookieBottomSheetDialog
 import com.xiaoyv.workflow.ui.webview.WorkflowWebScreen
 import kotlinx.coroutines.launch
 
@@ -49,7 +48,6 @@ private sealed interface WorkflowDefaultPage {
 @Composable
 fun WorkflowDefaultSideEffectHost(
     hostState: WorkflowSideEffectHostState,
-    onCookiesSynced: suspend (url: String, cookies: List<WorkflowWebCookie>) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -122,10 +120,10 @@ fun WorkflowDefaultSideEffectHost(
                 )
             },
             syncCookieDialogSlot = { effect, onConfirm ->
-                WorkflowCookieSyncBottomSheet(
+                WorkflowSyncCookieBottomSheetDialog(
                     effect = effect,
-                    onComplete = { cookies ->
-                        onCookiesSynced(effect.url, cookies)
+                    onComplete = {
+                        // todo set cookie
                         onConfirm()
                     },
                 )

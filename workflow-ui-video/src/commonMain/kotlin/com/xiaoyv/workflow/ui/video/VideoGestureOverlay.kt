@@ -12,7 +12,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import com.xiaoyv.workflow.ui.platform.video.MediaVolumeManager
+import com.xiaoyv.workflow.platform.video.MediaVolumeManager
 import org.openani.mediamp.MediampPlayer
 import org.openani.mediamp.features.AudioLevelController
 import org.openani.mediamp.features.PlaybackSpeed

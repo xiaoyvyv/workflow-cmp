@@ -8,6 +8,7 @@ import com.xiaoyv.workflow.model.spec.ActionCodecConfigKey
 import com.xiaoyv.workflow.model.spec.ActionCryptoConfigKey
 import com.xiaoyv.workflow.model.spec.ActionCsvConfigKey
 import com.xiaoyv.workflow.model.spec.ActionDataConfigKey
+import com.xiaoyv.workflow.model.spec.ActionDataMergeStrategy
 import com.xiaoyv.workflow.model.spec.ActionDateConfigKey
 import com.xiaoyv.workflow.model.spec.ActionJsonConfigKey
 import com.xiaoyv.workflow.model.spec.ActionMathConfigKey
@@ -17,6 +18,7 @@ import com.xiaoyv.workflow.model.spec.ActionTextConfigKey
 import com.xiaoyv.workflow.model.spec.ActionUrlConfigKey
 import com.xiaoyv.workflow.model.spec.ActionXmlConfigKey
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -28,7 +30,95 @@ internal object DataSamples {
     val all: List<ActionWorkflow> = buildList {
         // Data 节点
         add(linear("data_set_var", "写入临时变量", ActionNodeType.SET_VARIABLE, config(ActionDataConfigKey.KEY to "enabled", ActionDataConfigKey.VALUE to true)))
-        add(linear("data_remove_var", "删除变量", ActionNodeType.DATA_REMOVE, config(ActionDataConfigKey.KEY to "enabled")))
+        add(
+            linear(
+                "data_coalesce",
+                "空值合并",
+                ActionNodeType.DATA_COALESCE,
+                config(
+                    ActionDataConfigKey.VALUES to JsonArray(listOf(JsonNull, JsonPrimitive("fallback_value"))),
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_concat",
+                "拼接文本",
+                ActionNodeType.DATA_CONCAT,
+                config(
+                    ActionDataConfigKey.VALUES to JsonArray(listOf(JsonPrimitive("Hello"), JsonPrimitive("World"))),
+                    ActionDataConfigKey.SEPARATOR to " ",
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_merge",
+                "合并对象",
+                ActionNodeType.DATA_MERGE,
+                config(
+                    ActionDataConfigKey.OBJECTS to JsonArray(
+                        listOf(
+                            JsonObject(mapOf("a" to JsonPrimitive(1))),
+                            JsonObject(mapOf("b" to JsonPrimitive(2))),
+                        )
+                    ),
+                    ActionDataConfigKey.MERGE_STRATEGY to ActionDataMergeStrategy.SHALLOW,
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_assign",
+                "路径赋值",
+                ActionNodeType.DATA_ASSIGN,
+                config(
+                    ActionDataConfigKey.OBJECT to JsonObject(mapOf("user" to JsonObject(emptyMap()))),
+                    ActionDataConfigKey.ASSIGNMENTS to JsonObject(mapOf("$.user.name" to JsonPrimitive("Bocchi"))),
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_remove",
+                "删除对象字段",
+                ActionNodeType.DATA_REMOVE,
+                config(
+                    ActionDataConfigKey.OBJECT to JsonObject(mapOf("enabled" to JsonPrimitive(true), "temp" to JsonPrimitive("del"))),
+                    ActionDataConfigKey.PATH to "$.temp",
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_rename",
+                "重命名对象字段",
+                ActionNodeType.DATA_RENAME,
+                config(
+                    ActionDataConfigKey.OBJECT to JsonObject(mapOf("oldKey" to JsonPrimitive("value"))),
+                    ActionDataConfigKey.FROM_PATH to "$.oldKey",
+                    ActionDataConfigKey.TO_PATH to "$.newKey",
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
+        add(
+            linear(
+                "data_pick",
+                "挑选对象字段",
+                ActionNodeType.DATA_PICK,
+                config(
+                    ActionDataConfigKey.OBJECT to JsonObject(mapOf("a" to JsonPrimitive(1), "b" to JsonPrimitive(2))),
+                    ActionDataConfigKey.PATHS to JsonArray(listOf(JsonPrimitive("$.a"))),
+                    ActionDataConfigKey.OUTPUT_KEY to "result",
+                ),
+            )
+        )
         add(
             linear(
                 "data_template",

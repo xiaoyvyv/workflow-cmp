@@ -107,10 +107,9 @@ object ActionNodeTestFixtures {
     }
 
     fun nodeDefinitions(): Map<String, ActionNodeDefinition> =
-        builtInActionNodeDefinitions(
-            testHttpRequestExecutor,
-            testPreferencesStore,
-        ).associateBy { it.spec.type }
+        builtInActionNodeDefinitions(testHttpRequestExecutor, testPreferencesStore).associateBy {
+            it.spec.type
+        }
 
     fun config(vararg values: Pair<String, JsonElement>): JsonObject = buildJsonObject {
         values.forEach { (key, value) -> put(key, value) }

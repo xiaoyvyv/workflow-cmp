@@ -8,14 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.xiaoyv.workflow.demo.mvi.UiState
 
 val ContentMargin = 16.dp
 val ContentMarginHalf = 8.dp
-
-sealed interface Screen {
-    data object Workflows : Screen
-}
 
 object Res {
     object string {
@@ -37,32 +32,34 @@ object Res {
         const val workflow_run_running = "运行中"
         const val workflow_run_finished = "已完成"
         const val workflow_run_error = "运行失败"
-        const val workflow_run_nodes = "执行节点：%s"
-        const val workflow_run_opened_url = "打开链接：%s"
+        const val workflow_run_nodes = "执行节点：%1\$s"
+        const val workflow_run_opened_url = "打开链接：%1\$s"
         const val workflow_run_output = "执行输出"
     }
 }
 
-fun stringResource(value: String, vararg args: Any): String =
-    if (args.isEmpty()) value else "$value ${args.joinToString()}"
-
-@Composable
-fun BgmTopAppBar(title: String, onNavigationClick: () -> Unit) {
-    CenterAlignedTopAppBar(title = {
-        Text(title)
-    })
+fun stringResource(value: String, vararg args: Any): String {
+    if (args.isEmpty()) return value
+    var result = value
+    for ((index, arg) in args.withIndex()) {
+        val indexedStr = "%${index + 1}\$s"
+        val indexedInt = "%${index + 1}\$d"
+        when {
+            result.contains(indexedStr) -> result = result.replace(indexedStr, arg.toString())
+            result.contains(indexedInt) -> result = result.replace(indexedInt, arg.toString())
+            result.contains("%s") -> result = result.replaceFirst("%s", arg.toString())
+            result.contains("%d") -> result = result.replaceFirst("%d", arg.toString())
+            else -> result = "$result $arg"
+        }
+    }
+    return result
 }
 
 @Composable
-fun <T> StateLayout(
-    uiState: UiState<T>,
-    modifier: Modifier = Modifier,
-    onRefresh: (Boolean) -> Unit = {},
-    content: @Composable (T) -> Unit,
-) {
-    Column(modifier) {
-        content(uiState.data)
-    }
+fun BgmTopAppBar(title: String, onNavigationClick: () -> Unit = {}) {
+    CenterAlignedTopAppBar(title = {
+        Text(title)
+    })
 }
 
 @Composable

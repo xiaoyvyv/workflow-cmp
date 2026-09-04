@@ -5,9 +5,8 @@ plugins {
 kotlin {
     android {
         namespace = "com.xiaoyv.workflow.node.testkit"
-
-
     }
+
     sourceSets {
         commonMain.dependencies {
             implementation(projects.workflowCore)

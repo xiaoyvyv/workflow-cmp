@@ -6,14 +6,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Dp
-import com.xiaoyv.workflow.ui.platform.video.BrightnessManager
-import com.xiaoyv.workflow.ui.platform.video.VideoScreenController
-import com.xiaoyv.workflow.ui.platform.video.rememberBrightnessManager
+import com.xiaoyv.workflow.platform.video.BrightnessManager
+import com.xiaoyv.workflow.platform.video.VideoScreenController
+import com.xiaoyv.workflow.ui.platform.SystemService
+import com.xiaoyv.workflow.ui.platform.rememberSystemService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -26,21 +26,19 @@ import kotlin.time.Duration.Companion.milliseconds
  *
  * @param initialIsFullscreen 初始全屏状态。
  * @param initialControlsVisible 初始控制栏是否显示。
- * @param brightnessManager 屏幕亮度管理器，用于获取初始默认亮度。
+ * @param systemService 系统管理器。
  */
 @Composable
 fun rememberVideoScaffoldState(
     initialIsFullscreen: Boolean = false,
     initialControlsVisible: Boolean = true,
-    brightnessManager: BrightnessManager = rememberBrightnessManager(),
+    systemService: SystemService = rememberSystemService(),
 ): VideoScaffoldState {
-    val defaultBrightness = remember(brightnessManager) { brightnessManager.getBrightness() }
-
     return rememberSaveable(saver = VideoScaffoldState.Saver) {
         VideoScaffoldState(
             initialIsFullscreen = initialIsFullscreen,
             initialControlsVisible = initialControlsVisible,
-            initialBrightness = defaultBrightness,
+            initialBrightness = systemService.brightness.getBrightness(),
         )
     }
 }

@@ -19,21 +19,13 @@ kotlin {
     }
 
     sourceSets {
-        androidMain.dependencies {
+        androidMain.dependencies { }
 
-        }
+        commonMain.dependencies { }
 
-        commonMain.dependencies {
+        iosMain.dependencies { }
 
-        }
-
-        iosMain.dependencies {
-
-        }
-
-        jvmMain.dependencies {
-
-        }
+        jvmMain.dependencies { }
     }
 }
 

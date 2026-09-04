@@ -48,7 +48,6 @@ kotlin {
                 optIn("androidx.compose.ui.ExperimentalComposeUiApi")
                 optIn("androidx.compose.foundation.ExperimentalFoundationApi")
                 optIn("androidx.paging.ExperimentalPagingApi")
-                optIn("org.orbitmvi.orbit.annotation.OrbitExperimental")
                 optIn("androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi")
             }
         }

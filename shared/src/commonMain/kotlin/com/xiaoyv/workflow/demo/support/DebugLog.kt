@@ -7,5 +7,6 @@ annotation class LogScopeDsl
 data class LogScope(var tag: String = "WorkflowDemo")
 
 inline fun debugLog(crossinline message: LogScope.() -> Any) {
-    LogScope().message()
+    val scope = LogScope()
+    println("[${scope.tag}] " + scope.message())
 }

@@ -5,12 +5,13 @@ plugins {
 kotlin {
     android {
         namespace = "com.xiaoyv.workflow.ui.video"
-
-
     }
+
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.workflowUi)
+            implementation(projects.workflowUiCore)
+            implementation(projects.workflowPlatform)
+            implementation(projects.workflowPlatformUi)
             implementation(libs.compose.mediamp.all)
         }
     }

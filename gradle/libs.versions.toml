@@ -3,6 +3,7 @@ agp = "9.4.0"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
+androidx-core = "1.18.0"
 androidx-activityCompose = "1.13.0"
 androidx-lifecycle = "2.11.0"
 coil3 = "3.6.0"
@@ -28,7 +29,6 @@ kotlinx-coroutines = "1.11.0"
 ksoup = "0.2.6"
 ktor = "3.5.2"
 mediamp = "0.3.2"
-orbit-mvi = "12.0.1"
 zoomimage = "1.7.0-alpha01"
 dataStore = "1.2.1"
 
@@ -45,6 +45,7 @@ kotlinx-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immuta
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serialization" }
 kotlinx-serialization-proto = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlin-serialization" }
 
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit-android" }
@@ -58,8 +59,6 @@ compose-material-icons-extended = { module = "org.jetbrains.compose.material:mat
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 compose-mediamp-all = { module = "org.openani.mediamp:mediamp-all", version.ref = "mediamp" }
 compose-mediamp-runtime = { module = "org.openani.mediamp:mediamp-mpv-runtime", version.ref = "mediamp" }
-compose-mvi = { module = "org.orbit-mvi:orbit-core", version.ref = "orbit-mvi" }
-compose-mvi-compose = { module = "org.orbit-mvi:orbit-compose", version.ref = "orbit-mvi" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }

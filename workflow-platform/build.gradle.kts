@@ -11,16 +11,14 @@ kotlin {
     sourceSets {
         commonTest.dependencies {
         }
-        commonMain.dependencies {
+        commonMain.dependencies { }
 
+        androidMain.dependencies {
+            implementation(libs.androidx.core.ktx)
         }
 
-        iosMain.dependencies {
+        iosMain.dependencies { }
 
-        }
-
-        iosMain.dependencies {
-
-        }
+        iosMain.dependencies { }
     }
 }

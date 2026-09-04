@@ -88,7 +88,7 @@ internal object FlowSamples {
                 ActionNodeType.TEMPLATE,
                 "多路合流",
                 config(
-                    ActionDataConfigKey.TEMPLATE to "合流结果: \${vars.left_val} + \${vars.right_val}",
+                    ActionDataConfigKey.TEMPLATE to "合流结果: \${steps.node_left.left_val} + \${steps.node_right.right_val}",
                     ActionDataConfigKey.OUTPUT_KEY to "result"
                 )
             ),

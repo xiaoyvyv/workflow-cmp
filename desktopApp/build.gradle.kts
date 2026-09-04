@@ -21,8 +21,6 @@ compose.desktop {
     application {
         buildTypes.release.proguard {
             isEnabled.set(false)
-
-
         }
 
         mainClass = "com.xiaoyv.workflow.MainKt"
@@ -32,10 +30,6 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.xiaoyv.workflow"
             packageVersion = "1.0.0"
-
-
         }
-
-
     }
 }

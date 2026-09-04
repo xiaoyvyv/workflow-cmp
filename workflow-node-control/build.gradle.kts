@@ -5,9 +5,8 @@ plugins {
 kotlin {
     android {
         namespace = "com.xiaoyv.workflow.node.control"
-
-
     }
+
     sourceSets {
         commonMain.dependencies {
             implementation(projects.workflowNodeBase)

@@ -26,9 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.xiaoyv.workflow.ui.platform.back.PlatformBackHandler
-import com.xiaoyv.workflow.ui.platform.video.rememberBrightnessManager
-import com.xiaoyv.workflow.ui.platform.video.rememberMediaVolumeManager
-import com.xiaoyv.workflow.ui.platform.video.rememberVideoScreenController
+import com.xiaoyv.workflow.ui.platform.rememberSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.openani.mediamp.MediaStatus
@@ -66,9 +64,10 @@ fun VideoScaffold(
     val playbackSpeed = player.features.getOrFail(PlaybackSpeed)
     val currentSpeed by playbackSpeed.valueFlow.collectAsState(initial = playbackSpeed.value)
     val playerState by player.state.collectAsState()
-    val brightnessManager = rememberBrightnessManager()
-    val mediaVolumeManager = rememberMediaVolumeManager()
-    val videoScreenController = rememberVideoScreenController()
+    val systemService = rememberSystemService()
+    val brightnessManager = systemService.brightness
+    val mediaVolumeManager = systemService.mediaVolume
+    val videoScreenController = systemService.videoScreen
     val coroutineScope = rememberCoroutineScope()
 
     val currentIsFullscreen = isFullscreen ?: state.isFullscreen

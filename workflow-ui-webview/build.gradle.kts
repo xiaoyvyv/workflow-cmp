@@ -9,7 +9,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.workflowUi)
+            implementation(projects.workflowUiCore)
             implementation(projects.workflowCore)
             implementation(libs.compose.webview)
         }

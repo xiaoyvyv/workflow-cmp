@@ -246,12 +246,18 @@ private fun buildProgressDialogResult(
     val message = node.config[ActionProgressDialogConfigKey.MESSAGE]
         ?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }
         .orEmpty()
-    val mode = node.config[ActionProgressDialogConfigKey.MODE]
+    val rawMode = node.config[ActionProgressDialogConfigKey.MODE]
         ?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }
         .orEmpty()
-        .ifBlank { ActionProgressDialogMode.INDETERMINATE }
-    require(mode in setOf(ActionProgressDialogMode.INDETERMINATE, ActionProgressDialogMode.DETERMINATE)) {
-        "进度模式仅支持 ${ActionProgressDialogMode.INDETERMINATE} 或 ${ActionProgressDialogMode.DETERMINATE}"
+    val mode = if (rawMode.isBlank()) {
+        if (action == ActionProgressDialogAction.UPDATE) "" else ActionProgressDialogMode.INDETERMINATE
+    } else {
+        rawMode
+    }
+    if (mode.isNotBlank()) {
+        require(mode in setOf(ActionProgressDialogMode.INDETERMINATE, ActionProgressDialogMode.DETERMINATE)) {
+            "进度模式仅支持 ${ActionProgressDialogMode.INDETERMINATE} 或 ${ActionProgressDialogMode.DETERMINATE}"
+        }
     }
     val progress = if (action == ActionProgressDialogAction.UPDATE) {
         resolveProgressValueOrNull(node.config[ActionProgressDialogConfigKey.PROGRESS], context)
@@ -261,10 +267,17 @@ private fun buildProgressDialogResult(
     val maxProgress = if (action == ActionProgressDialogAction.UPDATE) {
         resolveProgressValueOrNull(node.config[ActionProgressDialogConfigKey.MAX_PROGRESS], context)
     } else {
-        resolveProgressValue(node.config[ActionProgressDialogConfigKey.MAX_PROGRESS], context, 1f)
+        val defaultMax = if (progress != null && progress > 1f) 100f else 1f
+        resolveProgressValue(node.config[ActionProgressDialogConfigKey.MAX_PROGRESS], context, defaultMax)
     }
-    if (mode == ActionProgressDialogMode.DETERMINATE && progress != null && maxProgress != null) {
-        require(maxProgress > 0f && progress in 0f..maxProgress) { "精确进度必须满足 0 ≤ progress ≤ maxProgress，且 maxProgress > 0" }
+    if (progress != null) {
+        require(progress >= 0f) { "进度值不能为负数" }
+    }
+    if (maxProgress != null) {
+        require(maxProgress > 0f) { "最大进度值必须大于 0" }
+    }
+    if (progress != null && maxProgress != null) {
+        require(progress <= maxProgress) { "当前进度值 ($progress) 不能大于最大进度值 ($maxProgress)" }
     }
     return ActionNodeExecutionResult(
         outputPortId = ActionControlPortId.SUCCESS,

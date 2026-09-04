@@ -12,7 +12,6 @@ import com.xiaoyv.workflow.model.spec.ActionHttpConfigKey
 import com.xiaoyv.workflow.model.spec.ActionImagePreviewConfigKey
 import com.xiaoyv.workflow.model.spec.ActionInputDialogConfigKey
 import com.xiaoyv.workflow.model.spec.ActionLoopConfigKey
-import com.xiaoyv.workflow.model.spec.ActionMathConfigKey
 import com.xiaoyv.workflow.model.spec.ActionNodeType
 import com.xiaoyv.workflow.model.spec.ActionNotificationConfigKey
 import com.xiaoyv.workflow.model.spec.ActionOpenAppConfigKey
@@ -470,12 +469,11 @@ internal object IoSamples {
             ),
             node(
                 "add_progress",
-                ActionNodeType.MATH_ADD,
+                ActionNodeType.SET_VARIABLE,
                 "进度加 10",
                 config(
-                    ActionMathConfigKey.LEFT to "\${vars.progress}",
-                    ActionMathConfigKey.RIGHT to 10,
-                    ActionMathConfigKey.OUTPUT_KEY to "progress",
+                    ActionDataConfigKey.KEY to "progress",
+                    ActionDataConfigKey.VALUE to "\${vars.progress + 10}",
                 ),
             ),
             node(

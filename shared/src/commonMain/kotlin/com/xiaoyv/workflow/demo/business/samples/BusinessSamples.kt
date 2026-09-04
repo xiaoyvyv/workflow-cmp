@@ -73,7 +73,7 @@ internal object BusinessSamples {
             ),
             node(
                 "loop_tags", ActionNodeType.LOOP_FOR_EACH, "遍历标签", config(
-                    ActionLoopConfigKey.ITEMS to "\${vars.tags}",
+                    ActionLoopConfigKey.ITEMS to "\${steps.extract_tags.tags}",
                 )
             ),
             node(
@@ -88,11 +88,12 @@ internal object BusinessSamples {
                     ActionDataConfigKey.VALUE to "\${loop.item.name}",
                 )
             ),
-            node("append_tag", ActionNodeType.TEXT_JOIN, "追加标签名称", buildJsonObject {
-                put(ActionTextConfigKey.VALUES, JsonArray(listOf(JsonPrimitive("\${vars.tagNames}"), JsonPrimitive("\${loop.item.name}"))))
-                put(ActionTextConfigKey.SEPARATOR, JsonPrimitive(","))
-                put(ActionTextConfigKey.OUTPUT_KEY, JsonPrimitive("tagNames"))
-            }),
+            node(
+                "append_tag", ActionNodeType.SET_VARIABLE, "追加标签名称", config(
+                    ActionDataConfigKey.KEY to "tagNames",
+                    ActionDataConfigKey.VALUE to "\${vars.tagNames},\${loop.item.name}",
+                )
+            ),
             node("next_tag", ActionNodeType.LOOP_NEXT, "继续遍历标签", config(ActionLoopConfigKey.LOOP_ID to "loop_tags")),
             node(
                 "show_tags", ActionNodeType.SHOW_TOAST, "显示标签", config(
@@ -200,7 +201,7 @@ internal object BusinessSamples {
                     ActionHttpConfigKey.METHOD to "GET",
                     ActionHttpConfigKey.HEADERS to JsonObject(
                         mapOf(
-                            "Cookie" to JsonPrimitive("buvid4=\${vars.buvid4}"),
+                            "Cookie" to JsonPrimitive("buvid4=\${steps.extract_bilibili_buvid4.buvid4}"),
                             "Referer" to JsonPrimitive("https://www.bilibili.com/"),
                             "User-Agent" to JsonPrimitive(BILIBILI_WEB_USER_AGENT),
                         ),
@@ -233,7 +234,7 @@ internal object BusinessSamples {
                 ActionNodeType.TEXT_REGEX_MATCH,
                 "提取 img key",
                 config(
-                    ActionTextConfigKey.TEXT to "\${vars.imgUrl}",
+                    ActionTextConfigKey.TEXT to "\${steps.extract_img_url.imgUrl}",
                     ActionTextConfigKey.PATTERN to "/([^/]+)\\.png\$",
                     ActionTextConfigKey.OUTPUT_KEY to "imgKeyGroups",
                 ),
@@ -243,7 +244,7 @@ internal object BusinessSamples {
                 ActionNodeType.TEXT_REGEX_MATCH,
                 "提取 sub key",
                 config(
-                    ActionTextConfigKey.TEXT to "\${vars.subUrl}",
+                    ActionTextConfigKey.TEXT to "\${steps.extract_sub_url.subUrl}",
                     ActionTextConfigKey.PATTERN to "/([^/]+)\\.png\$",
                     ActionTextConfigKey.OUTPUT_KEY to "subKeyGroups",
                 ),
@@ -253,9 +254,9 @@ internal object BusinessSamples {
                 ActionNodeType.BILIBILI_SIGN_URL,
                 "Bilibili WBI 链接加签",
                 config(
-                    ActionBilibiliConfigKey.URL to "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=media_bangumi&keyword=\${vars.sanitizedKeyword}",
-                    ActionBilibiliConfigKey.IMG_KEY to "\${vars.imgKeyGroups.1}",
-                    ActionBilibiliConfigKey.SUB_KEY to "\${vars.subKeyGroups.1}",
+                    ActionBilibiliConfigKey.URL to "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=media_bangumi&keyword=\${steps.sanitize_keyword.sanitizedKeyword}",
+                    ActionBilibiliConfigKey.IMG_KEY to "\${steps.extract_img_key.imgKeyGroups.1}",
+                    ActionBilibiliConfigKey.SUB_KEY to "\${steps.extract_sub_key.subKeyGroups.1}",
                     ActionBilibiliConfigKey.OUTPUT_KEY to "signedUrl",
                 ),
             ),
@@ -621,7 +622,7 @@ internal object BusinessSamples {
                 ActionNodeType.CONDITION_IS_NULL,
                 "是否找到漫画",
                 config(
-                    ActionControlConfigKey.VALUE to "\${vars.mangaId}",
+                    ActionControlConfigKey.VALUE to "\${steps.extract_manga_id.mangaId}",
                 ),
             ),
             node(
@@ -629,7 +630,7 @@ internal object BusinessSamples {
                 ActionNodeType.HTTP_REQUEST,
                 "获取漫画章节列表",
                 config(
-                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga/\${vars.mangaId}/feed",
+                    ActionHttpConfigKey.URL to "https://api.mangadex.org/manga/\${steps.extract_manga_id.mangaId}/feed",
                     ActionHttpConfigKey.METHOD to "GET",
                 ),
             ),
@@ -648,7 +649,7 @@ internal object BusinessSamples {
                 ActionNodeType.HTTP_REQUEST,
                 "获取章节服务器信息",
                 config(
-                    ActionHttpConfigKey.URL to "https://api.mangadex.org/at-home/server/\${vars.chapterId}",
+                    ActionHttpConfigKey.URL to "https://api.mangadex.org/at-home/server/\${steps.extract_chapter_id.chapterId}",
                     ActionHttpConfigKey.METHOD to "GET",
                 ),
             ),
@@ -696,7 +697,7 @@ internal object BusinessSamples {
                 ActionNodeType.LOOP_FOR_EACH,
                 "遍历图片文件名",
                 config(
-                    ActionLoopConfigKey.ITEMS to "\${vars.filenames}",
+                    ActionLoopConfigKey.ITEMS to "\${steps.extract_filenames.filenames}",
                 ),
             ),
             node(
@@ -704,7 +705,7 @@ internal object BusinessSamples {
                 ActionNodeType.TEMPLATE,
                 "拼接图片全路径",
                 config(
-                    ActionDataConfigKey.TEMPLATE to "\${vars.baseUrl}/data/\${vars.hash}/\${loop.item}",
+                    ActionDataConfigKey.TEMPLATE to "\${steps.extract_base_url.baseUrl}/data/\${steps.extract_hash.hash}/\${loop.item}",
                     ActionDataConfigKey.OUTPUT_KEY to "imageUrl",
                 ),
             ),
@@ -714,8 +715,17 @@ internal object BusinessSamples {
                 "追加到图片列表",
                 config(
                     ActionArrayConfigKey.VALUES to "\${vars.imageUrlList}",
-                    ActionArrayConfigKey.VALUE to "\${vars.imageUrl}",
+                    ActionArrayConfigKey.VALUE to "\${steps.build_image_url.imageUrl}",
                     ActionArrayConfigKey.OUTPUT_KEY to "imageUrlList",
+                ),
+            ),
+            node(
+                "save_image_list",
+                ActionNodeType.SET_VARIABLE,
+                "更新图片列表变量",
+                config(
+                    ActionDataConfigKey.KEY to "imageUrlList",
+                    ActionDataConfigKey.VALUE to "\${steps.append_image_url.imageUrlList}",
                 ),
             ),
             node(
@@ -758,7 +768,8 @@ internal object BusinessSamples {
             edge("init_image_list", ActionControlPortId.NEXT, "loop_filenames"),
             edge("loop_filenames", ActionControlPortId.BODY, "build_image_url"),
             edge("build_image_url", ActionControlPortId.NEXT, "append_image_url"),
-            edge("append_image_url", ActionControlPortId.NEXT, "next_filename"),
+            edge("append_image_url", ActionControlPortId.NEXT, "save_image_list"),
+            edge("save_image_list", ActionControlPortId.NEXT, "next_filename"),
             edge("loop_filenames", ActionControlPortId.COMPLETED, "preview_images"),
             edge("preview_images", ActionControlPortId.SUCCESS, "end_after_preview"),
             edge("show_no_manga", ActionControlPortId.SUCCESS, "end_after_no_manga"),
