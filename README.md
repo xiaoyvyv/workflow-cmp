@@ -5,19 +5,20 @@
 <h1 align="center">workflow-cmp</h1>
 
 <p align="center">
-  <strong>基于 Kotlin Multiplatform 与 Compose Multiplatform 的下一代高性能、声明式 DAG 工作流编排与跨平台交互引擎</strong>
+  <strong>基于 Kotlin Multiplatform 的声明式 DAG 自动化与工作流编排执行引擎</strong>
 </p>
 
 <p align="center">
-  将流程控制、数据转换、网络请求、UI 交互与音视频播放抽象为结构化协议，在 Android、iOS 与 Desktop (JVM) 实现多端统一调度与响应式渲染
+  专为跨平台自动化任务、数据管道与复杂业务流程编排而设计。<br />
+  将流程控制、网络请求、网页解析、数据清洗转换与异步任务抽象为声明式节点协议，在 Android、iOS 与 Desktop (JVM) 实现多端统一调度执行。
 </p>
 
 <p align="center">
   <a href="#1-项目架构与模块划分">项目架构</a> •
   <a href="#2-执行模型与调度内核">调度内核</a> •
   <a href="#3-模板与表达式引擎">表达式引擎</a> •
-  <a href="#4-内置节点参考规范">节点字典</a> •
-  <a href="#6-接入与工程开发指南">快速接入</a>
+  <a href="#4-内置节点参考">节点字典</a> •
+  <a href="#6-快速接入与示例">快速接入</a>
 </p>
 
 <p align="center">
@@ -37,42 +38,42 @@
 
 ---
 
-### 🌟 核心特性一览
+### 🌟 核心特性与应用场景
 
 <table align="center" width="100%">
   <tr>
     <td width="50%" valign="top">
-      <h4>⚡ 现代化 DAG 调度内核</h4>
+      <h4>⚡ 现代化 DAG 调度与 API 编排</h4>
       <ul>
-        <li><b>拓扑排序驱动</b>：自动检测循环依赖与死锁，按拓扑序严格调度</li>
-        <li><b>并发分支与合流 (Fork & Join)</b>：天然支持多任务并行触发与多通道屏障合流</li>
-        <li><b>响应式数据流</b>：全面基于 Kotlin Coroutines 与 Flow，状态事件全生命周期可监听</li>
+        <li><b>拓扑并发调度</b>：严格按拓扑序计算依赖，支持死锁校验、多任务并发分支与屏障合流 (Fork & Join)</li>
+        <li><b>协程全生命周期事件流</b>：基于 Kotlin Coroutines 与 Flow 驱动，节点状态、错误与副作用事件全量向外发射</li>
+        <li><b>动态参数流转与容错</b>：上下文变量安全隔离，支持超时控制、失败自动重试与动态路径分支选择</li>
       </ul>
     </td>
     <td width="50%" valign="top">
-      <h4>🌍 极致多端统一 (KMP / CMP)</h4>
+      <h4>🕷️ 跨端数据抓取与格式清洗</h4>
       <ul>
-        <li><b>一套逻辑，三端运行</b>：一套工作流在 Android、iOS 与 Desktop (JVM) 逻辑完全一致</li>
-        <li><b>平台抽象隔离</b>：将剪贴板、振动、通知、系统跳转等差异解耦至宿主抽象层</li>
-        <li><b>环境状态沙箱</b>：内置安全变量隔离机制与跨任务并发隔离能力</li>
+        <li><b>一套逻辑，三端运行</b>：在 Android、iOS 与 Desktop (JVM) 保持执行逻辑完全一致，亦支持纯后台无头运行</li>
+        <li><b>Ksoup DOM 抽取与解析</b>：无缝解析 HTML 源码，支持 CSS 选择器精准抽取、属性过滤与表格转 JSON 字典</li>
+        <li><b>丰富数据清洗与加解密</b>：内置正则匹配替换、Base64 / Hex / URL 编解码、MD5 / SHA / AES 加密与 JSON / XML / CSV 互转</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h4>🎨 开箱即用的专业 Compose UI 交互</h4>
+      <h4>🤝 强解耦的副作用抽象与人机协同</h4>
       <ul>
-        <li><b>专业漫画阅读器</b>：双布局自由切换（水平翻页 + 竖直条漫上下 3f 倍预渲染）与手势缩放</li>
-        <li><b>全功能播放器与浏览器</b>：内置跨平台视频画面脚手架与 Cookie 动态同步弹窗</li>
-        <li><b>丰富系统交互</b>：单选/多选列表弹窗、文本输入、二次确认与生命周期进度条</li>
+        <li><b>人机协同 (Human-in-the-loop)</b>：工作流可在任意节点随时挂起，等待外部决策介入，用户操作完成后无缝恢复</li>
+        <li><b>开箱即用默认交互套件</b>：内置通用交互节点（单选/多选列表弹窗、单行文本输入、二次确认对话框与生命周期进度条）</li>
+        <li><b>多媒体预览与宿主隔离</b>：支持全屏大图画廊（双布局自由切换 + 手势缩放）与视频播放脚手架，节点不持有 UI 引用，可 100% 自定义替换</li>
       </ul>
     </td>
     <td width="50%" valign="top">
-      <h4>🧩 强大的表达式引擎与丰富节点库</h4>
+      <h4>🧩 强大表达式引擎与自定义节点扩展</h4>
       <ul>
-        <li><b>内联语法求值</b>：支持三元条件 <code>? :</code>、Elvis 兜底 <code>?:</code>、逻辑运算与成员方法调用</li>
-        <li><b>18 大类节点全覆盖</b>：流程、控制、循环、JSON、对象、数组、文本、正则、加解密、网络等</li>
-        <li><b>零门槛定制扩展</b>：标准的 <code>ActionNodeDefinition</code> 声明式插拔接口</li>
+        <li><b>内联语法动态求值</b>：支持三元运算符 <code>? :</code>、Elvis 兜底 <code>?:</code>、算术逻辑比较与成员方法调用 (<code>.trim</code> / <code>.length</code>)</li>
+        <li><b>18 大类内置节点覆盖</b>：流程、控制、循环、JSON、对象、数组、文本、数学、日期时间、网络请求、沙箱文件与存储等</li>
+        <li><b>自由组合与无限扩展</b>：基于标准的 <code>ActionNodeDefinition</code> 声明式插拔接口，快速扩展私有业务节点，自由编排任意复杂自动化工作流</li>
       </ul>
     </td>
   </tr>
@@ -83,9 +84,8 @@
 ## 目录
 
 1. [项目架构与模块划分](#1-项目架构与模块划分)
-    1. [模块划分全景图](#11-模块划分全景图)
-    2. [模块职责与依赖边界](#12-模块职责与依赖边界)
-    3. [包结构规范](#13-包结构规范)
+   1. [模块结构](#11-模块结构)
+   2. [核心设计要点](#12-核心设计要点)
 2. [执行模型与调度内核](#2-执行模型与调度内核)
     1. [调度机制与生命周期](#21-调度机制与生命周期)
     2. [分支与合流 (Fork & Join)](#22-分支与合流-fork--join)
@@ -94,7 +94,7 @@
     1. [命名空间访问](#31-命名空间访问)
     2. [运算符优先级与语法规则](#32-运算符优先级与语法规则)
     3. [类型转换与真值判定](#33-类型转换与真值判定)
-4. [内置节点参考规范](#4-内置节点参考规范)
+4. [内置节点参考](#4-内置节点参考)
     1. [流程控制与分支 (`flow.*`)](#41-流程控制与分支-flow)
     2. [逻辑判断 (`control.*`)](#42-逻辑判断-control)
     3. [循环控制与迭代 (`loop.*`)](#43-循环控制与迭代-loop)
@@ -113,32 +113,26 @@
     16. [文件系统沙箱 (`file.*`)](#416-文件系统沙箱-file)
     17. [客户端动作与 UI 交互 (`action.*`, `ui.*`, `system.*`)](#417-客户端动作与-ui-交互-action-ui-system)
     18. [业务扩展节点 (`bilibili.*`)](#418-业务扩展节点-bilibili)
-5. [错误处理与诊断体系](#5-错误处理与诊断体系)
-    1. [异常模型与继承层次](#51-异常模型与继承层次)
-    2. [错误码分类规范](#52-错误码分类规范)
-    3. [结构化错误输出协议](#53-结构化错误输出协议)
-    4. [诊断追踪与日志监听](#54-诊断追踪与日志监听)
-6. [接入与工程开发指南](#6-接入与工程开发指南)
-    1. [工作流运行时装配 (`WorkflowRuntimeFactory`)](#61-工作流运行时装配-workflowruntimefactory)
-    2. [执行调用与事件流消费](#62-执行调用与事件流消费)
-    3. [Compose UI 宿主接入 (`WorkflowDefaultSideEffectHost`)](#63-compose-ui-宿主接入-workflowdefaultsideeffecthost)
-    4. [自定义节点开发规范](#64-自定义节点开发规范)
+5. [错误处理与调试](#5-错误处理与调试)
+6. [快速接入与示例](#6-快速接入与示例)
+   1. [创建运行时 (`WorkflowRuntimeFactory`)](#61-创建运行时-workflowruntimefactory)
+   2. [执行工作流与事件监听](#62-执行工作流与事件监听)
+   3. [Compose UI 交互宿主挂载](#63-compose-ui-交互宿主挂载)
+   4. [自定义节点扩展](#64-自定义节点扩展)
     5. [构建与测试命令](#65-构建与测试命令)
 
 ---
 
 ## 1. 项目架构与模块划分
 
-### 1.1 模块划分全景图
-
-工程采用高内聚、低耦合的分层与细粒度子模块设计：
+### 1.1 模块结构
 
 ```text
 workflow-cmp/
-  ├── :workflow-core                 # [核心层] 核心数据模型、DAG拓扑校验、调度引擎内核、表达式求值器
+  ├── :workflow-core                 # [核心调度] 数据模型、DAG拓扑校验、并发调度引擎、表达式求值器
   │
   ├── 节点体系 (Node Modules)
-  │   ├── :workflow-node-base        # [节点基础] 节点规格契约、元数据模型、节点注册中心 (ActionNodeRegistry)
+  │   ├── :workflow-node-base        # [节点基础] 规格契约、元数据模型、节点注册中心
   │   ├── :workflow-node-control     # [流程/分支] 流程控制 (flow.*) 与逻辑判断 (control.*)
   │   ├── :workflow-node-data        # [数据/变换] 上下文变量、Object/Array/Text/Math/Date/URL/JSON/XML/CSV
   │   ├── :workflow-node-codec       # [编解码] Base64、Hex、URL 编解码、HTML 转义
@@ -146,48 +140,32 @@ workflow-cmp/
   │   ├── :workflow-node-crypto      # [密码摘要] MD5、SHA、HMAC、AES 加解密
   │   ├── :workflow-node-io          # [输入输出] HTTP 网络请求/下载、Preferences 本地存储、沙箱文件系统
   │   ├── :workflow-node-bilibili    # [特定业务扩展] Bilibili Wbi 签名与 API 适配节点
-  │   ├── :workflow-node-all         # [聚合装配] 内置节点全量聚合与运行时工厂 (WorkflowRuntimeFactory)
-  │   └── :workflow-node-testkit     # [测试套件] 节点规格与执行行为自动化测试工具
+  │   ├── :workflow-node-all         # [聚合装配] 内置节点聚合与运行时工厂 (WorkflowRuntimeFactory)
+  │   └── :workflow-node-testkit     # [测试套件] 节点规格与执行自动化测试工具
   │
   ├── 平台底座能力 (Platform Modules)
-  │   ├── :workflow-platform         # [非Compose平台层] 音量/屏幕亮度管理 (MediaVolume/Brightness)、全屏控制器
+  │   ├── :workflow-platform         # [基础平台层] 音量/屏幕亮度管理、全屏控制器
   │   └── :workflow-platform-ui      # [Compose平台层] 跨平台系统服务 (SystemService)、BackHandler
   │
   ├── UI交互与表现层 (UI Modules)
   │   ├── :workflow-ui-core          # [UI核心] SideEffect宿主状态控制器 (WorkflowSideEffectHostState)、标准弹窗
-  │   ├── :workflow-ui-image         # [大图画廊] 跨平台全屏图片预览 (WorkflowImagePreviewPage，支持缩放)
-  │   ├── :workflow-ui-video         # [视频播放] 跨平台内置视频播放器 (WorkflowVideoPreviewPage，MediaMP/MPV)
-  │   ├── :workflow-ui-webview       # [网页/Cookie] 内置网页容器 (WorkflowWebScreen)、Cookie同步BottomSheet
-  │   └── :workflow-ui-all           # [UI聚合] 完整开箱即用的 SideEffect 默认宿主 (WorkflowDefaultSideEffectHost)
+  │   ├── :workflow-ui-image         # [大图画廊] 跨平台全屏图片预览 (WorkflowImagePreviewPage，支持缩放/条漫)
+  │   ├── :workflow-ui-video         # [视频播放] 跨平台内置视频播放器 (WorkflowVideoPreviewPage)
+  │   ├── :workflow-ui-webview       # [网页/Cookie] 内置网页容器 (WorkflowWebScreen)、Cookie同步弹窗
+  │   └── :workflow-ui-all           # [UI聚合] 开箱即用的 SideEffect 默认宿主 (WorkflowDefaultSideEffectHost)
   │
   ├── 应用与演示层 (App & Demo)
-  │   ├── :shared                    # 跨平台测试与演示主模块，轻量原生 MVI (WorkflowsViewModel)
+  │   ├── :shared                    # 跨平台演示模块 (WorkflowsViewModel)
   │   ├── :androidApp                # Android 入口工程
   │   └── :desktopApp                # Desktop (JVM) 入口工程
 ```
 
-### 1.2 模块职责与依赖边界
+### 1.2 核心设计要点
 
-1. **核心纯粹性 (`:workflow-core`)**：纯 Kotlin Multiplatform 实现，不依赖任何 UI 框架与具体平台 API。通过 `ActionSideEffect`、`ActionHttpRequestExecutor`、`ActionWorkflowFileStorage`
-   等端口完成平台解耦。
-2. **零 DI 强依赖**：摒弃对特定依赖注入框架（如 Koin、Dagger）的强绑定，使用标准的工厂函数 `createWorkflowRuntime(config)` 显式组装运行时，易于集成到任意现代架构中。
-3. **副作用驱动 UI 交互**：节点自身不直接持有 UI 引用。当遇到确认弹窗、网页跳转、音视频播放等操作时，向宿主分发 `ActionSideEffect`，宿主借由 Compose 挂起机制渲染响应并回传结果。
-4. **按需引入**：若只需执行数据转换工作流，仅需引入 `:workflow-core` 与所需的节点子模块；若需完整客户端交互能力，配合引入 `:workflow-node-all` 与 `:workflow-ui-all`。
-
-### 1.3 包结构规范
-
-全工程采用统一定义根包 `com.xiaoyv.workflow`：
-
-```text
-com.xiaoyv.workflow/
-  ├── model/           # 工作流定义、规格常量、执行快照、日志模型
-  ├── engine/          # 拓扑校验器、执行状态机、并行调度器、分支路由器
-  ├── node/            # 节点注册表、模板表达式解析器、各内置节点实现
-  ├── platform/        # 平台系统原生服务 (音量、亮度、全屏等)
-  ├── ui/              # Compose 表现层：SideEffect 宿主、弹窗、图片画廊、视频播放、内置浏览器
-  ├── port/            # 外部基础设施抽象接口 (HTTP、文件、存储、日志)
-  └── di/              # 运行时显式装配工厂 (WorkflowRuntimeFactory)
-```
+1. **调度内核纯粹 (`:workflow-core`)**：纯 Kotlin 实现，负责 DAG 拓扑解析与并发调度，平台相关的网络、存储与交互通过通用接口解耦。
+2. **轻量运行时组装**：通过 `createWorkflowRuntime(config)` 显式组装引擎与节点，便于嵌入到现有工程与架构中。
+3. **副作用交互解耦**：节点不直接持有 UI 引用，涉及弹窗、输入或媒体展示时通过 `ActionSideEffect` 由宿主挂起处理并回传结果。
+4. **按需依赖引入**：支持按需组合模块，基础逻辑仅需依赖 `:workflow-core` 与相关数据节点；如需客户端交互弹窗与预览能力，按需引入 `:workflow-ui-*` 模块。
 
 ---
 
@@ -301,7 +279,7 @@ com.xiaoyv.workflow/
 
 ---
 
-## 4. 内置节点参考规范
+## 4. 内置节点参考
 
 ### 4.1 流程控制与分支 (`flow.*`)
 
@@ -644,76 +622,42 @@ HTML 解析节点基于 **Ksoup** 引擎构建，负责 DOM 树的解析、选�
 
 ---
 
-## 5. 错误处理与诊断体系
+## 5. 错误处理与调试
 
-### 5.1 异常模型与继承层次
+工作流在静态校验未通过或运行期发生异常时，会抛出结构化的 `ActionWorkflowException`，携带具体的错误标识与排查建议：
 
-引擎通过结构化异常体系管理静态拓扑错误与运行期故障：
+- **静态校验失败 (`ActionValidationException`)**：如拓扑成环、节点 ID 冲突、缺少必需输入参数等。
+- **节点执行失败 (`ActionNodeExecutionException`)**：如网络超时、数值计算除零、表达式解析失败等。
 
-```text
-               ActionWorkflowException (领域异常抽象基类)
-                          │
-         ┌────────────────┴────────────────┐
-         ▼                                 ▼
-ActionValidationException         ActionNodeExecutionException
- (拓扑结构与静态配置校验不通过)         (节点运行期抛出未捕获异常)
-```
-
-所有抛出异常均携带结构化诊断字段：
-
-- `code`: 机器可读的错误标识码（如 `invalid_workflow`、`node_execution_failed`）。
-- `message`: 人类可读的错误描述信息。
-- `workflowId` / `workflowName`: 发生异常的工作流标识与名称。
-- `nodeId` / `nodeType` / `nodeLabel`: 触发异常的节点标识、类型与展示名称。
-- `configKey`: 触发校验失败的具体配置键（可选）。
-- `details`: 发生异常时的输入与配置快照（`JsonObject`）。
-- `hint`: 排查指导建议字符串。
-
-### 5.2 错误码分类规范
-
-错误码统一收归于 `ActionErrorCode.kt`：
-
-1. **运行时错误 (`ActionErrorCode`)**：包含 `INVALID_WORKFLOW`、`WORKFLOW_DISABLED`、`STEP_LIMIT`、`MISSING_NODE`、`UNKNOWN_NODE`、`LOOP_EXECUTION_FAILED`、`SIDE_EFFECT_CANCELLED`、
-   `SIDE_EFFECT_FAILED`、`NODE_EXECUTION_FAILED` 等。
-2. **静态校验错误 (`ActionValidationCode`)**：包含 `UNSUPPORTED_FORMAT`、`DUPLICATE_NODE_ID`、`INVALID_ENTRY`、`MISSING_CONFIG`、`CONTROL_CYCLE`、`JOIN_WITHOUT_PARALLEL` 等 26 项拓扑与参数规则。
-
-### 5.3 结构化错误输出协议
-
-当工作流执行失败或进入 `failure` 端口时，引擎通过 `toExecutionError()` 导出标准 JSON 快照：
+异常与失败事件均包含完整的上下文诊断字段（`code`、`nodeId`、`hint` 与输入配置快照）：
 
 ```json
 {
-   "error": {
-      "code": "node_execution_failed",
-      "message": "节点 [divide_node] 执行抛出未捕获异常",
-      "nodeId": "divide_node",
-      "nodeType": "math.divide",
-      "nodeLabel": "除法计算",
-      "workflowId": "wf_sample",
-      "configKey": "right",
-      "details": {
-         "config": {
-            "left": 100,
-            "right": 0
-         }
-      },
-      "hint": "除数不能为 0，请在除法前通过 control.if 校验。"
-   }
+   "code": "node_execution_failed",
+   "message": "节点 [divide_node] 执行失败",
+   "nodeId": "divide_node",
+   "nodeType": "math.divide",
+   "hint": "除数不能为 0，请在计算前通过 control.if 校验。"
 }
 ```
 
-### 5.4 诊断追踪与日志监听
+### 日志监听
 
-- **控制台跟踪输出 (`ActionWorkflowTraceLogger`)**：在调试模式下，引擎在控制台输出带节点元数据与建议的错误报告。
-- **全局日志监听器 (`ActionWorkflowLogListener`)**：通过 `ActionWorkflowTraceLogger.addListener { tag, priority, message -> ... }` 接入外部日志系统。
+在开发与排查时，可通过 `ActionWorkflowTraceLogger` 挂载外部日志监听器：
+
+```kotlin
+ActionWorkflowTraceLogger.addListener { tag, priority, message ->
+   println("[$tag] $message")
+}
+```
 
 ---
 
-## 6. 接入与工程开发指南
+## 6. 快速接入与示例
 
-### 6.1 工作流运行时装配 (`WorkflowRuntimeFactory`)
+### 6.1 创建运行时 (`WorkflowRuntimeFactory`)
 
-不依赖任何第三方 DI 框架，使用聚合模块 `:workflow-node-all` 提供的工厂函数直接创建完整的运行时环境：
+通过工厂函数直接创建工作流运行时环境（包含调度引擎、节点注册表与校验器）：
 
 ```kotlin
 import com.xiaoyv.workflow.di.WorkflowRuntimeConfig
@@ -724,7 +668,7 @@ import io.ktor.client.HttpClient
 // 1. 初始化宿主网络 Client
 val httpClient = HttpClient()
 
-// 2. 显式组装 WorkflowRuntime（包含引擎、节点注册表、校验器与序列化 Codec）
+// 2. 组装 WorkflowRuntime（包含引擎、节点注册表、校验器与序列化 Codec）
 val runtime = createWorkflowRuntime(
     config = WorkflowRuntimeConfig(
         httpRequestExecutor = DefaultActionHttpRequestExecutor(httpClient),
@@ -774,9 +718,9 @@ val executionJob = scope.launch {
 }
 ```
 
-### 6.3 Compose UI 宿主接入 (`WorkflowDefaultSideEffectHost`)
+### 6.3 Compose UI 交互宿主挂载
 
-在 Compose Multiplatform 界面中，配合 `:workflow-ui-core` 与 `:workflow-ui-all` 即可一站式消费各类副作用弹窗与多媒体页面：
+在 Compose Multiplatform 界面中，配合 `:workflow-ui-core` 与 `:workflow-ui-all` 即可一站式挂载各类副作用弹窗与多媒体页面：
 
 ```kotlin
 import androidx.compose.foundation.layout.Box
@@ -799,7 +743,7 @@ fun AppContent() {
             }
         )
 
-        // 2. 放置聚合宿主视图，自动渲染对话框、全屏大图预览、视频播放器与内置浏览器
+       // 2. 放置聚合交互宿主，自动挂载对话框、全屏图片预览、视频播放器与内置浏览器
         WorkflowDefaultSideEffectHost(
             hostState = effectHostState,
             modifier = Modifier.fillMaxSize(),
@@ -808,15 +752,13 @@ fun AppContent() {
 }
 ```
 
-### 6.4 自定义节点开发规范
+### 6.4 自定义节点扩展
 
-扩展业务自定义节点遵循以下标准步骤：
+通过实现 `ActionNodeDefinition` 与 `ActionNodeExecutor`，可快速声明与扩展业务私有节点：
 
-1. **声明节点标识**：在 `ActionNodeType` 中添加唯一常量标识（如 `const val CUSTOM_PROCESS = "custom.process"`）。
-2. **定义配置键**：在 `ActionNodeKeys.kt` 中声明配置参数常量，避免字符串硬编码。
-3. **编写节点规格定义**：使用 `ActionNodeSpec` 明确输入、输出端口与必需配置键。
-4. **实现执行器**：实现 `ActionNodeExecutor`，从 `ActionExecutionContext` 读取入参与变量，返回 `ActionNodeExecutionResult`。
-5. **装配节点**：在调用 `createWorkflowRuntime(config, nodeDefinitions = listOf(customNode))` 时追加注册。
+1. **定义规格 (`ActionNodeSpec`)**：声明节点类型、输入/输出端口与必需配置项。
+2. **实现执行器 (`ActionNodeExecutor`)**：从 `ActionExecutionContext` 读取入参并执行逻辑，返回 `ActionNodeExecutionResult`。
+3. **注册节点**：在调用 `createWorkflowRuntime(config, nodeDefinitions = listOf(customNode))` 时追加注册即可。
 
 ### 6.5 构建与测试命令
 
