@@ -10,6 +10,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.workflowCore)
+            implementation(projects.workflowPlatformRoom)
             implementation(projects.workflowNodeAll)
 
             implementation(projects.workflowUiCore)

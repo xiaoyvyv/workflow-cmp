@@ -145,6 +145,7 @@ workflow-cmp/
   │
   ├── 平台底座能力 (Platform Modules)
   │   ├── :workflow-platform         # [基础平台层] 音量/屏幕亮度管理、全屏控制器
+  │   ├── :workflow-platform-room    # [Room存储] 基于 Room 3 的跨平台 CookieJar / 本地持久化支持
   │   └── :workflow-platform-ui      # [Compose平台层] 跨平台系统服务 (SystemService)、BackHandler
   │
   ├── UI交互与表现层 (UI Modules)
@@ -405,7 +406,7 @@ workflow-cmp/
 | **`array.intersection`**    | 两个数组求交集       | `values`, `otherValues`, `outputKey`            | 交集数组         |
 | **`array.difference`**      | 两个数组求差集       | `values`, `otherValues`, `outputKey`            | 差集数组         |
 
-### 4.6 文本与正则处理 (`text.*`)
+### 4.7 文本与正则处理 (`text.*`)
 
 | 节点类型                        | 功能说明        | 配置参数                                             | 输出数据        |
 |:----------------------------|:------------|:-------------------------------------------------|:------------|
@@ -435,7 +436,7 @@ workflow-cmp/
 | **`text.slugify`**          | 生成 URL 别名格式 | `text`, `outputKey`                              | 字符串         |
 | **`text.truncate`**         | 超长截断与省略号补充  | `text`, `limit`, `outputKey`                     | 截断字符串       |
 
-### 4.7 数值与数学计算 (`math.*`)
+### 4.8 数值与数学计算 (`math.*`)
 
 | 节点类型                       | 功能说明                     | 配置参数                               | 输出数据           |
 |:---------------------------|:-------------------------|:-----------------------------------|:---------------|
@@ -459,7 +460,7 @@ workflow-cmp/
 | **`math.random`**          | 生成指定区间 `[min, max)` 伪随机数 | `min`, `max`, `outputKey`          | 数值             |
 | **`math.clamp`**           | 数值区间截断约束                 | `value`, `min`, `max`, `outputKey` | 数值             |
 
-### 4.8 日期与时间 (`date.*`)
+### 4.9 日期与时间 (`date.*`)
 
 | 节点类型                     | 功能说明                 | 必需配置键                                                  | 输出数据                 |
 |:-------------------------|:---------------------|:-------------------------------------------------------|:---------------------|
@@ -472,7 +473,7 @@ workflow-cmp/
 | **`date.relative_time`** | 转换为相对时间描述            | `timestamp`, `outputKey`                               | 相对时间字符串 (如 `"5分钟前"`) |
 | **`date.get_component`** | 提取时间分量 (年月日时分秒)      | `timestamp`, `outputKey`                               | 时间分量字典               |
 
-### 4.9 URL 解析与构建 (`url.*`)
+### 4.10 URL 解析与构建 (`url.*`)
 
 | 节点类型                      | 功能说明                    | 必需配置键                                     | 输出数据           |
 |:--------------------------|:------------------------|:------------------------------------------|:---------------|
@@ -481,7 +482,7 @@ workflow-cmp/
 | **`url.set_query_param`** | 设置或覆盖 URL 查询参数          | `url`, `key`, `value`, `outputKey`        | 新 URL 字符串      |
 | **`url.get_query_param`** | 读取 URL 指定查询参数值          | `url`, `key`, `outputKey`                 | 参数值字符串或 `null` |
 
-### 4.10 结构化数据解析 (`json.*`, `xml.*`, `csv.*`)
+### 4.11 结构化数据解析 (`json.*`, `xml.*`, `csv.*`)
 
 | 节点类型                 | 功能说明                  | 必需配置键                         | 输出数据                             |
 |:---------------------|:----------------------|:------------------------------|:---------------------------------|
@@ -545,10 +546,10 @@ HTML 解析节点基于 **Ksoup** 引擎构建，负责 DOM 树的解析、选�
 
 ### 4.14 网络与下载 (`http.*`)
 
-| 节点类型                | 功能说明             | 配置参数                                                                                                               | 输出结构说明                                                                  |
-|:--------------------|:-----------------|:-------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------|
-| **`http.request`**  | 发起 HTTP/HTTPS 请求 | `url`, `method` (GET/POST/PUT/DELETE), `headers?`, `query?`, `body?`, `timeoutMillis?`, `retryCount?`, `outputKey` | 包含 `statusCode` (Int), `isSuccess` (Boolean), `body` (解析后对象), `headers` |
-| **`http.download`** | 下载远程网络文件并写入沙箱目录  | 同 `http.request`，附加 `path` (保存目录), `fileName?` (可选文件名), `outputKey`                                                | 包含 `statusCode`, `isSuccess`, `filePath` (沙箱相对路径), `fileName`           |
+| 节点类型                | 功能说明                                       | 配置参数                                                                                                                                                                                                                                  | 输出结构说明                                                                                                                                                                                                       |
+|:--------------------|:-------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`http.request`**  | 发起 HTTP/HTTPS 请求（支持 GET/POST/PUT/DELETE 等） | `url` (必填), `method?` (默认 `"GET"`), `headers?`, `query?`, `body?`, `bodyType?` (`json`/`form`/`text`/`bytes`), `contentType?`, `timeoutMillis?`, `retryCount?`, `retryDelayMillis?`, `useLocalCookieStorage?` (Boolean), `outputKey?` | 输出包含：<br>• `statusCode` (Int 状态码)<br>• `isSuccess` (Boolean 是否成功)<br>• `contentType` (String 媒体类型)<br>• `rawBody` (String 原始文本响应体)<br>• `body` (JsonElement 结构化对象/数组/标量)                                     |
+| **`http.download`** | 下载远程网络文件并流式写入工作流沙箱目录                       | `url` (必填), `path` (必填，沙箱相对保存目录), `fileName?` (可选指定文件名，默认根据 Content-Disposition 或 URL 自动推断), `outputKey` (必填), `headers?`, `query?`, `method?`, `timeoutMillis?`, `retryCount?`, `retryDelayMillis?`, `useLocalCookieStorage?`        | 输出包含：<br>• `statusCode` (Int 状态码)<br>• `isSuccess` (Boolean 是否成功)<br>• `contentType` (String 媒体类型)<br>• `fileName` (String 保存文件名)<br>• `filePath` (String 沙箱内相对文件路径)<br>• `rawBody` / `body` (String 沙箱文件路径) |
 
 ### 4.15 本地持久化存储 (`storage.*`)
 

@@ -60,9 +60,12 @@ private fun codecBase64DecodeDefinition() = ActionNodeDefinition(
     ),
     executor = { node, context ->
         val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
+        val decoded = kotlin.io.encoding.Base64.withPadding(kotlin.io.encoding.Base64.PaddingOption.PRESENT_OPTIONAL)
+            .decode(text)
+            .decodeToString()
         node.valueResult(
             node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(kotlin.io.encoding.Base64.decode(text).decodeToString()),
+            JsonPrimitive(decoded),
         )
     },
 )
@@ -96,9 +99,12 @@ private fun codecBase64UrlDecodeDefinition() = ActionNodeDefinition(
     ),
     executor = { node, context ->
         val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
+        val decoded = kotlin.io.encoding.Base64.UrlSafe.withPadding(kotlin.io.encoding.Base64.PaddingOption.ABSENT_OPTIONAL)
+            .decode(text)
+            .decodeToString()
         node.valueResult(
             node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(kotlin.io.encoding.Base64.UrlSafe.decode(text).decodeToString()),
+            JsonPrimitive(decoded),
         )
     },
 )

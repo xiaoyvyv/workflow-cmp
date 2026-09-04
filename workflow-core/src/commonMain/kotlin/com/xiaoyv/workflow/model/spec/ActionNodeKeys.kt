@@ -1163,6 +1163,7 @@ object ActionOpenAppConfigKey {
  */
 object ActionOpenWebConfigKey {
     const val URL = ActionNodeConfigKey.URL
+    const val HEADERS = ActionNodeConfigKey.HEADERS
 }
 
 /**
@@ -1330,6 +1331,7 @@ object ActionShareConfigKey {
 object ActionImagePreviewConfigKey {
     const val INDEX = ActionNodeConfigKey.INDEX
     const val IMAGES = ActionNodeConfigKey.IMAGES
+    const val HEADERS = ActionNodeConfigKey.HEADERS
 }
 
 /**

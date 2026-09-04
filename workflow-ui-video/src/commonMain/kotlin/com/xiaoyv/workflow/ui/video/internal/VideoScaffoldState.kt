@@ -1,4 +1,4 @@
-package com.xiaoyv.workflow.ui.video
+package com.xiaoyv.workflow.ui.video.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable

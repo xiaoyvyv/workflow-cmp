@@ -9,8 +9,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.workflowUiCore)
             implementation(projects.workflowCore)
+            implementation(projects.workflowUiCore)
+            implementation(projects.workflowPlatformUi)
             implementation(libs.compose.webview)
         }
     }

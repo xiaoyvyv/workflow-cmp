@@ -56,20 +56,44 @@ import com.xiaoyv.workflow.di.WorkflowRuntimeConfig
 import com.xiaoyv.workflow.di.createWorkflowRuntime
 import com.xiaoyv.workflow.model.log.ActionExecutionStatus
 import com.xiaoyv.workflow.node.core.ActionNodeRegistry
+import com.xiaoyv.workflow.platform.room.cookie.RoomActionCookiesStorage
 import com.xiaoyv.workflow.port.impl.DefaultActionHttpRequestExecutor
 import com.xiaoyv.workflow.ui.all.WorkflowDefaultSideEffectHost
 import com.xiaoyv.workflow.ui.core.rememberWorkflowSideEffectHostState
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.LoggingFormat
 import kotlinx.coroutines.launch
 import okio.FileSystem
 
 @Composable
 fun WorkflowsRoute() {
-    val httpClient = remember { HttpClient() }
+    val cookiesStorage = remember { RoomActionCookiesStorage() }
+    val httpClient = remember {
+        HttpClient {
+            install(HttpCookies) {
+                storage = cookiesStorage
+            }
+            install(Logging) {
+                level = LogLevel.ALL
+                format = LoggingFormat.OkHttp
+                logger = object : io.ktor.client.plugins.logging.Logger {
+                    override fun log(message: String) {
+                        println("[Network] $message")
+                    }
+                }
+            }
+        }
+    }
+
     val runtime = remember {
         createWorkflowRuntime(
             config = WorkflowRuntimeConfig(
-                httpRequestExecutor = DefaultActionHttpRequestExecutor(httpClient),
+                httpRequestExecutor = DefaultActionHttpRequestExecutor(
+                    httpClient,
+                ),
             ),
         )
     }
@@ -156,22 +180,13 @@ fun WorkflowsRoute() {
                             divider = { HorizontalDivider() },
                         ) {
                             WorkflowCategory.entries.forEach { category ->
-                                val tabText = when (category) {
-                                    WorkflowCategory.ALL -> stringResource(Res.string.workflow_tab_all)
-                                    WorkflowCategory.PRACTICE -> stringResource(Res.string.workflow_tab_practice)
-                                    WorkflowCategory.FLOW_CONTROL -> stringResource(Res.string.workflow_tab_flow_control)
-                                    WorkflowCategory.DATA_MATH -> stringResource(Res.string.workflow_tab_data)
-                                    WorkflowCategory.TEXT_NET -> stringResource(Res.string.workflow_tab_text_net)
-                                    WorkflowCategory.UI_SIDE_EFFECT -> stringResource(Res.string.workflow_tab_ui_side_effect)
-                                    WorkflowCategory.ERROR_TEST -> stringResource(Res.string.workflow_tab_error)
-                                }
                                 Tab(
                                     selected = uiState.selectedCategory == category,
                                     onClick = {
                                         viewModel.onIntent(WorkflowsIntent.SelectCategory(category))
                                     },
                                     text = {
-                                        Text(text = tabText, style = MaterialTheme.typography.titleSmall)
+                                        Text(text = category.label, style = MaterialTheme.typography.titleSmall)
                                     },
                                 )
                             }
@@ -183,9 +198,7 @@ fun WorkflowsRoute() {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState()),
                         ) {
-                            val filteredSamples = WorkflowSamples.all.filter {
-                                uiState.selectedCategory.matches(it)
-                            }
+                            val filteredSamples = uiState.selectedCategory.samples()
 
                             filteredSamples.forEach { sample ->
                                 ListItem(

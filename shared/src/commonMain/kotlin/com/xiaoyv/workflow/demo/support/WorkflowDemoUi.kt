@@ -15,15 +15,6 @@ val ContentMarginHalf = 8.dp
 object Res {
     object string {
         const val workflow_title = "工作流"
-        const val workflow_tab_all = "全部"
-        const val workflow_tab_practice = "练习"
-        const val workflow_tab_flow_control = "流程控制"
-        const val workflow_tab_data = "数据"
-        const val workflow_tab_text_net = "文本与网络"
-        const val workflow_tab_ui_side_effect = "界面交互"
-        const val workflow_tab_error = "错误测试"
-        const val workflow_tab_saved = "已保存"
-        const val workflow_saved_title = "已保存工作流"
         const val workflow_example_run = "运行"
         const val workflow_run_title = "运行结果"
         const val workflow_view_node_graph = "节点图"

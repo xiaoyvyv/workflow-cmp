@@ -2,6 +2,7 @@ package com.xiaoyv.workflow.node.effect
 
 import com.xiaoyv.workflow.Immutable
 import com.xiaoyv.workflow.model.execution.ActionSideEffect
+import com.xiaoyv.workflow.util.serialization.SerializeMap
 
 /**
  * 请求宿主使用系统浏览器打开网页的副作用。
@@ -45,4 +46,5 @@ data class ActionOpenInternalWebEffect(
      * 要在应用内网页容器打开的绝对网页地址。
      */
     val url: String,
+    val headers: SerializeMap<String, String>,
 ) : ActionSideEffect

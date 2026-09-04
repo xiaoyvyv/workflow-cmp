@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
@@ -40,9 +41,16 @@ import com.multiplatform.webview.web.rememberWebViewState
 import com.xiaoyv.workflow.node.effect.ActionSyncCookieEffect
 import com.xiaoyv.workflow.ui.core.layout.WorkflowContentMargin
 import com.xiaoyv.workflow.ui.core.layout.WorkflowContentMarginHalf
+import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
+import io.ktor.http.URLBuilder
+import io.ktor.http.encodedPath
 import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.launch
+
+val LocalSyncWebCookieStorge = staticCompositionLocalOf<CookiesStorage> {
+    error("LocalSyncWebCookieStorge not provided")
+}
 
 /**
  * 工作流内置的网页 Cookie 同步 BottomSheet 弹窗。
@@ -55,29 +63,35 @@ import kotlinx.coroutines.launch
 @Composable
 fun WorkflowSyncCookieBottomSheetDialog(
     effect: ActionSyncCookieEffect,
-    onComplete: suspend (List<Cookie>) -> Unit,
+    onComplete: () -> Unit,
 ) {
     val sheetState = rememberBottomSheetState(initialValue = Hidden, setOf(Hidden, Expanded))
     var isTouchInsideWebView by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val cookiesStorage = LocalSyncWebCookieStorge.current
 
     ModalBottomSheet(
         modifier = Modifier.statusBarsPadding(),
         onDismissRequest = {
             coroutineScope.launch {
+                val url = URLBuilder(effect.url).apply { encodedPath = "/" }.build()
                 val webViewCookieManager = WebViewCookieManager()
-                val cookies = webViewCookieManager.getCookies(effect.url)
-                onComplete(cookies.map { cookie ->
-                    Cookie(
-                        name = cookie.name,
-                        value = cookie.value,
-                        path = cookie.path,
-                        domain = cookie.domain,
-                        secure = cookie.isSecure == true,
-                        httpOnly = cookie.isHttpOnly == true,
-                        expires = GMTDate(cookie.expiresDate),
+                val cookies = webViewCookieManager.getCookies(url.toString())
+                cookies.forEach { cookie ->
+                    cookiesStorage.addCookie(
+                        requestUrl = url,
+                        cookie = Cookie(
+                            name = cookie.name,
+                            value = cookie.value,
+                            path = cookie.path,
+                            domain = cookie.domain,
+                            secure = cookie.isSecure == true,
+                            httpOnly = cookie.isHttpOnly == true,
+                            expires = GMTDate(cookie.expiresDate),
+                        )
                     )
-                })
+                }
+                onComplete()
             }
         },
         sheetState = sheetState,

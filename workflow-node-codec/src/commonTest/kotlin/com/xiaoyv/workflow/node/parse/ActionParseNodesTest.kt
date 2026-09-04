@@ -131,4 +131,52 @@ class ActionParseNodesTest {
             }
         }
     }
+
+    @Test
+    fun testBase64AndBase64UrlDecodeWithAndWithoutPadding() = runBlocking {
+        val b64Decode = definitions.getValue(ActionNodeType.CODEC_BASE64_DECODE)
+        val b64UrlDecode = definitions.getValue(ActionNodeType.CODEC_BASE64_URL_DECODE)
+
+        // 1. Base64 URL decode without padding
+        val res1 = b64UrlDecode.executor.execute(
+            ActionNode(
+                id = "t1",
+                type = ActionNodeType.CODEC_BASE64_URL_DECODE,
+                config = config(
+                    ActionCodecConfigKey.TEXT to JsonPrimitive("SGVsbG8sIFdvcmtmbG93Pw"),
+                    ActionCodecConfigKey.OUTPUT_KEY to JsonPrimitive("result"),
+                )
+            ),
+            ActionExecutionContext()
+        )
+        assertEquals("Hello, Workflow?", res1.output.getValue("result").jsonPrimitive.content)
+
+        // 2. Base64 URL decode with padding
+        val res2 = b64UrlDecode.executor.execute(
+            ActionNode(
+                id = "t2",
+                type = ActionNodeType.CODEC_BASE64_URL_DECODE,
+                config = config(
+                    ActionCodecConfigKey.TEXT to JsonPrimitive("SGVsbG8sIFdvcmtmbG93Pw=="),
+                    ActionCodecConfigKey.OUTPUT_KEY to JsonPrimitive("result"),
+                )
+            ),
+            ActionExecutionContext()
+        )
+        assertEquals("Hello, Workflow?", res2.output.getValue("result").jsonPrimitive.content)
+
+        // 3. Standard Base64 decode without padding
+        val res3 = b64Decode.executor.execute(
+            ActionNode(
+                id = "t3",
+                type = ActionNodeType.CODEC_BASE64_DECODE,
+                config = config(
+                    ActionCodecConfigKey.TEXT to JsonPrimitive("SGVsbG8sIFdvcmtmbG93IQ"),
+                    ActionCodecConfigKey.OUTPUT_KEY to JsonPrimitive("result"),
+                )
+            ),
+            ActionExecutionContext()
+        )
+        assertEquals("Hello, Workflow!", res3.output.getValue("result").jsonPrimitive.content)
+    }
 }

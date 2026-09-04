@@ -5,6 +5,8 @@ import com.xiaoyv.workflow.model.execution.ActionSideEffect
 import com.xiaoyv.workflow.model.spec.ActionProgressDialogAction
 import com.xiaoyv.workflow.model.spec.ActionProgressDialogMode
 import com.xiaoyv.workflow.model.spec.ActionSelectOutputMode
+import com.xiaoyv.workflow.util.serialization.SerializeMap
+import kotlinx.collections.immutable.persistentMapOf
 
 /**
  * 请求宿主向用户显示短文本提示的副作用。
@@ -126,6 +128,7 @@ data class ActionProgressDialogEffect(
 data class ActionImagePreviewEffect(
     val index: Int = 0,
     val images: List<String> = emptyList(),
+    val headers: SerializeMap<String, String> = persistentMapOf(),
 ) : ActionSideEffect
 
 /**
@@ -137,7 +140,7 @@ data class ActionImagePreviewEffect(
 @Immutable
 data class ActionVideoPreviewEffect(
     val url: String = "",
-    val headers: Map<String, String> = emptyMap(),
+    val headers: SerializeMap<String, String> = persistentMapOf(),
 ) : ActionSideEffect
 
 /**

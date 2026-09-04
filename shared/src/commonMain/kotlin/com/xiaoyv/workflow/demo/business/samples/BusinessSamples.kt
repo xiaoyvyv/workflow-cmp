@@ -415,7 +415,7 @@ internal object BusinessSamples {
                 ActionNodeType.HTML_PARSE,
                 "解析搜索结果页面",
                 config(
-                    ActionHtmlConfigKey.HTML to "\${steps.search_hanime.body.html}",
+                    ActionHtmlConfigKey.HTML to "\${steps.search_hanime.rawBody}",
                     ActionHtmlConfigKey.OUTPUT_KEY to "doc",
                 ),
             ),
@@ -477,7 +477,7 @@ internal object BusinessSamples {
                 ActionNodeType.HTML_PARSE,
                 "解析详情页面文档",
                 config(
-                    ActionHtmlConfigKey.HTML to "\${steps.request_video_detail.body.html}",
+                    ActionHtmlConfigKey.HTML to "\${steps.request_video_detail.rawBody}",
                     ActionHtmlConfigKey.OUTPUT_KEY to "detailDoc",
                 ),
             ),

@@ -4,6 +4,16 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xiaoyv.workflow.demo.business.WorkflowSamples
+import com.xiaoyv.workflow.demo.business.samples.ActionSamples
+import com.xiaoyv.workflow.demo.business.samples.BilibiliSamples
+import com.xiaoyv.workflow.demo.business.samples.BusinessSamples
+import com.xiaoyv.workflow.demo.business.samples.CodecSamples
+import com.xiaoyv.workflow.demo.business.samples.CryptoSamples
+import com.xiaoyv.workflow.demo.business.samples.DataSamples
+import com.xiaoyv.workflow.demo.business.samples.ErrorSamples
+import com.xiaoyv.workflow.demo.business.samples.FlowSamples
+import com.xiaoyv.workflow.demo.business.samples.HtmlSamples
+import com.xiaoyv.workflow.demo.business.samples.IoSamples
 import com.xiaoyv.workflow.demo.support.debugLog
 import com.xiaoyv.workflow.engine.ActionSideEffectDispatcher
 import com.xiaoyv.workflow.engine.ActionSideEffectResult
@@ -48,61 +58,38 @@ data class WorkflowExampleRunState(
     val workflowId: String? = null,
     val status: String,
     val executedNodeIds: List<String> = emptyList(),
+    val isSuccess: Boolean? = null,
     val resolvedUrl: String? = null,
     val errorMessage: String? = null,
     val outputLines: List<String> = emptyList(),
 )
 
 /**
- * 测试工作流分类枚举。
+ * 测试工作流分类枚举：按业务示例、节点模块与错误测试分组。
  */
-enum class WorkflowCategory {
-    ALL,
-    PRACTICE,
-    FLOW_CONTROL,
-    DATA_MATH,
-    TEXT_NET,
-    UI_SIDE_EFFECT,
-    ERROR_TEST;
+enum class WorkflowCategory(val label: String) {
+    EXAMPLES("示例工作流"),
+    NODE_CONTROL("control"),
+    NODE_DATA("data"),
+    NODE_CODEC("codec"),
+    NODE_HTML("html"),
+    NODE_CRYPTO("crypto"),
+    NODE_IO("io"),
+    NODE_ACTION("action"),
+    NODE_BILIBILI("bilibili"),
+    ERROR_TEST("错误测试");
 
-    fun matches(workflow: ActionWorkflow): Boolean = when (this) {
-        ALL -> true
-        PRACTICE -> workflow.id in setOf(
-            "subject_tags_to_toast",
-            "bilibili_wbi_search",
-            "mangadex_search",
-            "hanime_search",
-        )
-
-        FLOW_CONTROL -> workflow.nodes.any {
-            it.type.startsWith("flow.") || it.type.startsWith("control.")
-        }
-
-        DATA_MATH -> workflow.nodes.any {
-            it.type.startsWith("data.") || it.type.startsWith("object.") ||
-                    it.type.startsWith("array.") || it.type.startsWith("math.")
-        }
-
-        TEXT_NET -> workflow.nodes.any {
-            it.type.startsWith("text.") || it.type.startsWith("html.") ||
-                    it.type.startsWith("json.") || it.type.startsWith("xml.") ||
-                    it.type.startsWith("csv.") || it.type.startsWith("url.") ||
-                    it.type.startsWith("crypto.") || it.type.startsWith("codec.") ||
-                    it.type.startsWith("date.")
-        }
-
-        UI_SIDE_EFFECT -> workflow.nodes.any {
-            it.type.startsWith("action.") || it.type.startsWith("ui.") ||
-                    it.type.startsWith("system.") || it.type.startsWith("storage.") ||
-                    it.type.startsWith("bilibili.")
-        }
-
-        ERROR_TEST -> workflow.id.contains("error") ||
-                workflow.name.contains("错误") ||
-                workflow.name.contains("异常") ||
-                workflow.name.contains("故障") ||
-                workflow.name.contains("失败") ||
-                workflow.name.contains("越界")
+    fun samples(): List<ActionWorkflow> = when (this) {
+        EXAMPLES -> BusinessSamples.all
+        NODE_CONTROL -> FlowSamples.all
+        NODE_DATA -> DataSamples.all
+        NODE_CODEC -> CodecSamples.all
+        NODE_HTML -> HtmlSamples.all
+        NODE_CRYPTO -> CryptoSamples.all
+        NODE_IO -> IoSamples.all
+        NODE_ACTION -> ActionSamples.all
+        NODE_BILIBILI -> BilibiliSamples.all
+        ERROR_TEST -> ErrorSamples.all
     }
 }
 
@@ -111,7 +98,7 @@ enum class WorkflowCategory {
  */
 @Immutable
 data class WorkflowsUiState(
-    val selectedCategory: WorkflowCategory = WorkflowCategory.ALL,
+    val selectedCategory: WorkflowCategory = WorkflowCategory.EXAMPLES,
     val selectedPanelTab: Int = 0, // 0: 节点卡片, 1: 运行日志
     val currentRun: WorkflowExampleRunState? = null,
 )

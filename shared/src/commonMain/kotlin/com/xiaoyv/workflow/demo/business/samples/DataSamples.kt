@@ -3,9 +3,6 @@ package com.xiaoyv.workflow.demo.business.samples
 import com.xiaoyv.workflow.model.definition.ActionWorkflow
 import com.xiaoyv.workflow.model.spec.ActionArrayConfigKey
 import com.xiaoyv.workflow.model.spec.ActionArrayFilterOperator
-import com.xiaoyv.workflow.model.spec.ActionBilibiliConfigKey
-import com.xiaoyv.workflow.model.spec.ActionCodecConfigKey
-import com.xiaoyv.workflow.model.spec.ActionCryptoConfigKey
 import com.xiaoyv.workflow.model.spec.ActionCsvConfigKey
 import com.xiaoyv.workflow.model.spec.ActionDataConfigKey
 import com.xiaoyv.workflow.model.spec.ActionDataMergeStrategy
@@ -463,60 +460,6 @@ internal object DataSamples {
             )
         )
 
-        // Codec & Crypto 节点
-        add(
-            linear(
-                "codec_base64_encode",
-                "Base64 编码",
-                ActionNodeType.CODEC_BASE64_ENCODE,
-                config(ActionCodecConfigKey.TEXT to "Hello", ActionCodecConfigKey.OUTPUT_KEY to "b64")
-            )
-        )
-        add(
-            linear(
-                "codec_base64_decode",
-                "Base64 解码",
-                ActionNodeType.CODEC_BASE64_DECODE,
-                config(ActionCodecConfigKey.TEXT to "SGVsbG8=", ActionCodecConfigKey.OUTPUT_KEY to "raw")
-            )
-        )
-        add(linear("codec_url_encode", "URL 编码", ActionNodeType.CODEC_URL_ENCODE, config(ActionCodecConfigKey.TEXT to "孤独摇滚！", ActionCodecConfigKey.OUTPUT_KEY to "encoded")))
-        add(
-            linear(
-                "codec_url_decode",
-                "URL 解码",
-                ActionNodeType.CODEC_URL_DECODE,
-                config(ActionCodecConfigKey.TEXT to "%E5%AD%A4%E7%8B%AC", ActionCodecConfigKey.OUTPUT_KEY to "decoded")
-            )
-        )
-        add(
-            linear(
-                "codec_html_escape",
-                "HTML 转义",
-                ActionNodeType.CODEC_HTML_ESCAPE,
-                config(ActionCodecConfigKey.TEXT to "<div>hello</div>", ActionCodecConfigKey.OUTPUT_KEY to "escaped")
-            )
-        )
-        add(
-            linear(
-                "codec_html_unescape",
-                "HTML 反转义",
-                ActionNodeType.CODEC_HTML_UNESCAPE,
-                config(ActionCodecConfigKey.TEXT to "&lt;div&gt;hello&lt;/div&gt;", ActionCodecConfigKey.OUTPUT_KEY to "unescaped")
-            )
-        )
-        add(linear("crypto_hash", "哈希计算 (SHA-256)", ActionNodeType.CRYPTO_HASH, config(ActionCryptoConfigKey.TEXT to "Hello", ActionCryptoConfigKey.OUTPUT_KEY to "hash")))
-        add(
-            linear(
-                "crypto_hmac",
-                "HMAC 签名",
-                ActionNodeType.CRYPTO_HMAC,
-                config(ActionCryptoConfigKey.TEXT to "Hello", ActionCryptoConfigKey.SECRET to "secretKey", ActionCryptoConfigKey.OUTPUT_KEY to "hmac")
-            )
-        )
-        add(linear("crypto_random_bytes", "随机字节", ActionNodeType.CRYPTO_RANDOM_BYTES, config(ActionCryptoConfigKey.OUTPUT_KEY to "bytes")))
-        add(linear("crypto_uuid", "Crypto UUID", ActionNodeType.CRYPTO_UUID, config(ActionCryptoConfigKey.OUTPUT_KEY to "uuid")))
-
         // JSON / XML / CSV 节点
         add(linear("json_extract", "JSON 路径提取", ActionNodeType.JSON_EXTRACT, buildJsonObject {
             put(ActionJsonConfigKey.SOURCE, JsonObject(mapOf("subject" to JsonObject(mapOf("name" to JsonPrimitive("孤独摇滚"))))))
@@ -552,19 +495,6 @@ internal object DataSamples {
             put(ActionCsvConfigKey.ITEMS, JsonArray(listOf(JsonObject(mapOf("a" to JsonPrimitive("1"), "b" to JsonPrimitive("2"))))))
             put(ActionCsvConfigKey.OUTPUT_KEY, JsonPrimitive("csvStr"))
         }))
-
-        // Bilibili WBI 加签
-        add(
-            linear(
-                "bilibili_sign_url",
-                "Bilibili WBI 链接加签",
-                ActionNodeType.BILIBILI_SIGN_URL,
-                config(
-                    ActionBilibiliConfigKey.URL to "https://api.bilibili.com/x/space/wbi/acc/info?mid=123456",
-                    ActionBilibiliConfigKey.OUTPUT_KEY to "signedUrl",
-                )
-            )
-        )
     }
 
     private fun mathSamples(): List<ActionWorkflow> = listOf(

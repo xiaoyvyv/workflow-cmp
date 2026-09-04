@@ -38,8 +38,8 @@ fun WorkflowSideEffectHost(
     onReadClipboard: suspend () -> String?,
     onOpenExternalUrl: (url: String) -> Unit,
     onOpenExternalApp: (uri: String, fallbackUrl: String?) -> Unit,
-    onOpenInternalWeb: (url: String) -> Unit,
-    onImagePreview: (images: List<String>, index: Int) -> Unit,
+    onOpenInternalWeb: (url: String, Map<String, String>) -> Unit,
+    onImagePreview: (index: Int, images: List<String>, headers: Map<String, String>) -> Unit,
     onVideoPreview: (url: String, headers: Map<String, String>) -> Unit,
     onShareText: (title: String, text: String, url: String) -> Unit,
     onSendNotification: (title: String, content: String) -> Unit,
@@ -61,7 +61,7 @@ fun WorkflowSideEffectHost(
     ) -> Unit,
     syncCookieDialogSlot: @Composable (
         effect: ActionSyncCookieEffect,
-        onConfirm: () -> Unit,
+        onComplete: () -> Unit,
     ) -> Unit,
 ) {
     val oneShotData = hostState.currentOneShotData
@@ -79,8 +79,8 @@ fun WorkflowSideEffectHost(
 
             is ActionOpenExternalUrlEffect -> onOpenExternalUrl(effect.url).let { ActionSideEffectResult.Success() }
             is ActionOpenExternalAppEffect -> onOpenExternalApp(effect.uri, effect.fallbackUrl).let { ActionSideEffectResult.Success() }
-            is ActionOpenInternalWebEffect -> onOpenInternalWeb(effect.url).let { ActionSideEffectResult.Success() }
-            is ActionImagePreviewEffect -> onImagePreview(effect.images, effect.index).let { ActionSideEffectResult.Success() }
+            is ActionOpenInternalWebEffect -> onOpenInternalWeb(effect.url, effect.headers).let { ActionSideEffectResult.Success() }
+            is ActionImagePreviewEffect -> onImagePreview(effect.index, effect.images, effect.headers).let { ActionSideEffectResult.Success() }
             is ActionVideoPreviewEffect -> onVideoPreview(effect.url, effect.headers).let { ActionSideEffectResult.Success() }
             is ActionShareEffect -> onShareText(effect.title, effect.text, effect.url).let { ActionSideEffectResult.Success() }
             is ActionNotificationEffect -> onSendNotification(effect.title, effect.content).let { ActionSideEffectResult.Success() }

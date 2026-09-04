@@ -1,4 +1,4 @@
-package com.xiaoyv.workflow.ui.video
+package com.xiaoyv.workflow.ui.video.internal
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween

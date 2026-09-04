@@ -57,6 +57,7 @@ internal val sideEffectTypes = setOf(
     ActionNodeType.SYSTEM_NOTIFICATION,
     ActionNodeType.SYSTEM_VIBRATE,
     ActionNodeType.HTTP_REQUEST,
+    ActionNodeType.HTTP_DOWNLOAD,
     ActionNodeType.IMAGE_PREVIEW,
     ActionNodeType.VIDEO_PREVIEW,
     ActionNodeType.SYNC_COOKIE,

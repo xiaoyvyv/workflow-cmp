@@ -1,6 +1,10 @@
 package com.xiaoyv.workflow.demo.business
 
+import com.xiaoyv.workflow.demo.business.samples.ActionSamples
+import com.xiaoyv.workflow.demo.business.samples.BilibiliSamples
 import com.xiaoyv.workflow.demo.business.samples.BusinessSamples
+import com.xiaoyv.workflow.demo.business.samples.CodecSamples
+import com.xiaoyv.workflow.demo.business.samples.CryptoSamples
 import com.xiaoyv.workflow.demo.business.samples.DataSamples
 import com.xiaoyv.workflow.demo.business.samples.ErrorSamples
 import com.xiaoyv.workflow.demo.business.samples.FlowSamples
@@ -11,9 +15,6 @@ import kotlinx.collections.immutable.toPersistentList
 
 /**
  * 内置节点的可运行回归样例门面。
- *
- * 聚合 [ErrorSamples]、[BusinessSamples]、[FlowSamples]、[DataSamples]、[HtmlSamples] 以及 [IoSamples]，
- * 对外部页面和测试提供统一且稳定的查询接口。
  */
 object WorkflowSamples {
     /**
@@ -23,20 +24,18 @@ object WorkflowSamples {
         // 错误与异常故障测试样例
         addAll(ErrorSamples.all)
 
-        // 复合业务实操样例
+        // 示例工作流（复合业务实操样例）
         addAll(BusinessSamples.all)
 
-        // 流程与控制节点样例
+        // 各模块节点测试用例
         addAll(FlowSamples.all)
-
-        // 基础数据与运算转换样例
         addAll(DataSamples.all)
-
-        // HTML 文档解析与 DOM 提取样例
+        addAll(CodecSamples.all)
         addAll(HtmlSamples.all)
-
-        // 存储、网络与 UI 副作用样例
+        addAll(CryptoSamples.all)
         addAll(IoSamples.all)
+        addAll(ActionSamples.all)
+        addAll(BilibiliSamples.all)
     }.toPersistentList()
 
     /**

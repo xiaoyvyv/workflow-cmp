@@ -51,6 +51,7 @@ import com.xiaoyv.workflow.node.effect.ActionWriteClipboardEffect
 import com.xiaoyv.workflow.node.resolver.ActionTemplateResolver
 import com.xiaoyv.workflow.node.resolver.ActionUrlPolicy
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -85,12 +86,20 @@ val sideEffectActionNodeDefinitions: List<ActionNodeDefinition> = listOf(
 )
 
 private fun openExternalUrlDefinition() =
-    sideEffectDefinition(ActionNodeType.OPEN_EXTERNAL_URL, ActionOpenUrlConfigKey.URL, setOf(ActionCapability.OPEN_EXTERNAL_URL)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.OPEN_EXTERNAL_URL,
+        requiredConfigKey = ActionOpenUrlConfigKey.URL,
+        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_URL)
+    ) { config, context ->
         ActionOpenExternalUrlEffect(url = ActionTemplateResolver.resolveText(config.string(ActionOpenUrlConfigKey.URL), context).also(ActionUrlPolicy::requireHttpUrl))
     }
 
 private fun openExternalAppDefinition() =
-    sideEffectDefinition(ActionNodeType.OPEN_EXTERNAL_APP, ActionOpenAppConfigKey.URI, setOf(ActionCapability.OPEN_EXTERNAL_APP)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.OPEN_EXTERNAL_APP,
+        requiredConfigKey = ActionOpenAppConfigKey.URI,
+        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_APP)
+    ) { config, context ->
         val uri = ActionTemplateResolver.resolveText(config.string(ActionOpenAppConfigKey.URI), context)
         val fallbackUrl = config[ActionOpenAppConfigKey.FALLBACK_URL]?.jsonPrimitive?.contentOrNull?.let { ActionTemplateResolver.resolveText(it, context) }
         ActionUrlPolicy.requireExternalAppUri(uri)
@@ -99,8 +108,22 @@ private fun openExternalAppDefinition() =
     }
 
 private fun openInternalWebDefinition() =
-    sideEffectDefinition(ActionNodeType.OPEN_INTERNAL_WEB, ActionOpenWebConfigKey.URL, setOf(ActionCapability.OPEN_INTERNAL_WEB)) { config, context ->
-        ActionOpenInternalWebEffect(ActionTemplateResolver.resolveText(config.string(ActionOpenWebConfigKey.URL), context).also(ActionUrlPolicy::requireHttpUrl))
+    sideEffectDefinition(
+        type = ActionNodeType.OPEN_INTERNAL_WEB,
+        requiredConfigKey = ActionOpenWebConfigKey.URL,
+        capabilities = setOf(ActionCapability.OPEN_INTERNAL_WEB)
+    ) { config, context ->
+        val headersElement = config[ActionOpenWebConfigKey.HEADERS]?.let { ActionTemplateResolver.resolveElement(it, context) } as? JsonObject
+        val headers = headersElement?.entries?.associate { (k, v) ->
+            val resolvedKey = ActionTemplateResolver.resolveText(k, context)
+            val resolvedVal = ActionTemplateResolver.resolveText(v.jsonPrimitive.contentOrNull.orEmpty(), context)
+            resolvedKey to resolvedVal
+        }.orEmpty()
+
+        ActionOpenInternalWebEffect(
+            url = ActionTemplateResolver.resolveText(config.string(ActionOpenWebConfigKey.URL), context).also(ActionUrlPolicy::requireHttpUrl),
+            headers = headers.toImmutableMap()
+        )
     }
 
 private fun showToastDefinition() = sideEffectDefinition(ActionNodeType.SHOW_TOAST, ActionToastConfigKey.MESSAGE, emptySet()) { config, context ->
@@ -108,12 +131,20 @@ private fun showToastDefinition() = sideEffectDefinition(ActionNodeType.SHOW_TOA
 }
 
 private fun writeClipboardDefinition() =
-    sideEffectDefinition(ActionNodeType.WRITE_CLIPBOARD, ActionClipboardConfigKey.TEXT, setOf(ActionCapability.CLIPBOARD_WRITE)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.WRITE_CLIPBOARD,
+        requiredConfigKey = ActionClipboardConfigKey.TEXT,
+        capabilities = setOf(ActionCapability.CLIPBOARD_WRITE)
+    ) { config, context ->
         ActionWriteClipboardEffect(ActionTemplateResolver.resolveText(config.string(ActionClipboardConfigKey.TEXT), context))
     }
 
 private fun confirmDefinition() =
-    sideEffectDefinition(ActionNodeType.UI_CONFIRM, ActionConfirmConfigKey.MESSAGE, setOf(ActionCapability.CONFIRM_DIALOG)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.UI_CONFIRM,
+        requiredConfigKey = ActionConfirmConfigKey.MESSAGE,
+        capabilities = setOf(ActionCapability.CONFIRM_DIALOG)
+    ) { config, context ->
         ActionConfirmEffect(
             title = config[ActionConfirmConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
             message = ActionTemplateResolver.resolveText(config.string(ActionConfirmConfigKey.MESSAGE), context),
@@ -123,7 +154,11 @@ private fun confirmDefinition() =
     }
 
 private fun shareDefinition() =
-    sideEffectDefinition(ActionNodeType.SYSTEM_SHARE, ActionShareConfigKey.TEXT, setOf(ActionCapability.SHARE)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.SYSTEM_SHARE,
+        requiredConfigKey = ActionShareConfigKey.TEXT,
+        capabilities = setOf(ActionCapability.SHARE)
+    ) { config, context ->
         ActionShareEffect(
             title = config[ActionShareConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
             text = ActionTemplateResolver.resolveText(config.string(ActionShareConfigKey.TEXT), context),
@@ -132,7 +167,11 @@ private fun shareDefinition() =
     }
 
 private fun notificationDefinition() =
-    sideEffectDefinition(ActionNodeType.SYSTEM_NOTIFICATION, ActionNotificationConfigKey.CONTENT, setOf(ActionCapability.NOTIFICATION)) { config, context ->
+    sideEffectDefinition(
+        type = ActionNodeType.SYSTEM_NOTIFICATION,
+        requiredConfigKey = ActionNotificationConfigKey.CONTENT,
+        capabilities = setOf(ActionCapability.NOTIFICATION)
+    ) { config, context ->
         ActionNotificationEffect(
             title = config[ActionNotificationConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
             content = ActionTemplateResolver.resolveText(config.string(ActionNotificationConfigKey.CONTENT), context),
@@ -249,11 +288,11 @@ private fun buildProgressDialogResult(
     val rawMode = node.config[ActionProgressDialogConfigKey.MODE]
         ?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }
         .orEmpty()
-    val mode = if (rawMode.isBlank()) {
+
+    val mode = rawMode.ifBlank {
         if (action == ActionProgressDialogAction.UPDATE) "" else ActionProgressDialogMode.INDETERMINATE
-    } else {
-        rawMode
     }
+
     if (mode.isNotBlank()) {
         require(mode in setOf(ActionProgressDialogMode.INDETERMINATE, ActionProgressDialogMode.DETERMINATE)) {
             "进度模式仅支持 ${ActionProgressDialogMode.INDETERMINATE} 或 ${ActionProgressDialogMode.DETERMINATE}"
@@ -445,7 +484,13 @@ private fun imagePreviewDefinition() =
             is JsonPrimitive -> listOf(resolvedImages.content)
             else -> emptyList()
         }
-        ActionImagePreviewEffect(index = index, images = images)
+        val headersElement = ActionTemplateResolver.resolveElement(config[ActionImagePreviewConfigKey.HEADERS], context) as? JsonObject
+        val headers = headersElement?.entries?.associate { (k, v) ->
+            val resolvedKey = ActionTemplateResolver.resolveText(k, context)
+            val resolvedVal = ActionTemplateResolver.resolveText(v.jsonPrimitive.contentOrNull.orEmpty(), context)
+            resolvedKey to resolvedVal
+        }.orEmpty()
+        ActionImagePreviewEffect(index = index, images = images, headers = headers.toImmutableMap())
     }
 
 private fun videoPreviewDefinition() =
@@ -462,7 +507,7 @@ private fun videoPreviewDefinition() =
             val resolvedVal = ActionTemplateResolver.resolveText(v.jsonPrimitive.contentOrNull.orEmpty(), context)
             resolvedKey to resolvedVal
         }.orEmpty()
-        ActionVideoPreviewEffect(url = url, headers = headers)
+        ActionVideoPreviewEffect(url = url, headers = headers.toImmutableMap())
     }
 
 private fun syncCookieDefinition() =

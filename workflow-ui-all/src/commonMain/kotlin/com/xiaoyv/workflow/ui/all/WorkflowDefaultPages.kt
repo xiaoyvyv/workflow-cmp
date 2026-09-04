@@ -5,16 +5,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.xiaoyv.workflow.ui.core.WorkflowConfirmAlertDialog
-import com.xiaoyv.workflow.ui.core.WorkflowInputAlertDialog
-import com.xiaoyv.workflow.ui.core.WorkflowProgressAlertDialog
-import com.xiaoyv.workflow.ui.core.WorkflowSelectAlertDialog
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
 import com.xiaoyv.workflow.ui.core.WorkflowSideEffectHost
 import com.xiaoyv.workflow.ui.core.WorkflowSideEffectHostState
 import com.xiaoyv.workflow.ui.image.WorkflowImagePreviewPage
@@ -25,8 +26,9 @@ import kotlinx.coroutines.launch
 
 private sealed interface WorkflowDefaultPage {
     data class Image(
-        val images: List<String>,
         val index: Int,
+        val images: List<String>,
+        val headers: Map<String, String>,
     ) : WorkflowDefaultPage
 
     data class Video(
@@ -36,6 +38,7 @@ private sealed interface WorkflowDefaultPage {
 
     data class Web(
         val url: String,
+        val headers: Map<String, String>,
     ) : WorkflowDefaultPage
 }
 
@@ -54,7 +57,7 @@ fun WorkflowDefaultSideEffectHost(
     val hapticFeedback = LocalHapticFeedback.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val page = remember { androidx.compose.runtime.mutableStateOf<WorkflowDefaultPage?>(null) }
+    var page by remember { mutableStateOf<WorkflowDefaultPage?>(null) }
 
     Box(modifier = modifier) {
         WorkflowSideEffectHost(
@@ -71,19 +74,20 @@ fun WorkflowDefaultSideEffectHost(
                 clipboardManager.getText()?.text
             },
             onOpenExternalUrl = { url ->
-                page.value = WorkflowDefaultPage.Web(url)
+
             },
             onOpenExternalApp = { uri, fallbackUrl ->
-                page.value = WorkflowDefaultPage.Web(fallbackUrl ?: uri)
+                val url = fallbackUrl ?: uri
+
             },
-            onOpenInternalWeb = { url ->
-                page.value = WorkflowDefaultPage.Web(url)
+            onOpenInternalWeb = { url, headers ->
+                page = WorkflowDefaultPage.Web(url, headers)
             },
-            onImagePreview = { images, index ->
-                page.value = WorkflowDefaultPage.Image(images, index)
+            onImagePreview = { index, images, headers ->
+                page = WorkflowDefaultPage.Image(index, images, headers)
             },
             onVideoPreview = { url, headers ->
-                page.value = WorkflowDefaultPage.Video(url, headers)
+                page = WorkflowDefaultPage.Video(url, headers)
             },
             onShareText = { _, text, url ->
                 scope.launch {
@@ -119,36 +123,44 @@ fun WorkflowDefaultSideEffectHost(
                     onCancel = onCancel,
                 )
             },
-            syncCookieDialogSlot = { effect, onConfirm ->
+            syncCookieDialogSlot = { effect, onComplete ->
                 WorkflowSyncCookieBottomSheetDialog(
                     effect = effect,
-                    onComplete = {
-                        // todo set cookie
-                        onConfirm()
-                    },
+                    onComplete = onComplete,
                 )
             },
         )
+
         WorkflowProgressAlertDialog(tasks = hostState.progressTasks)
+
         SnackbarHost(hostState = snackbarHostState)
 
-        when (val currentPage = page.value) {
+        val platformContext = LocalPlatformContext.current
+
+        when (val currentPage = page) {
             is WorkflowDefaultPage.Image -> WorkflowImagePreviewPage(
-                images = currentPage.images,
+                images = remember(currentPage.images, platformContext) {
+                    currentPage.images.map {
+                        ImageRequest.Builder(platformContext)
+                            .data(it)
+                            .build()
+                    }
+                },
                 initialIndex = currentPage.index,
-                onDismiss = { page.value = null },
+                onDismiss = { page = null },
                 modifier = Modifier.fillMaxSize(),
             )
 
             is WorkflowDefaultPage.Video -> WorkflowVideoPreviewPage(
                 videoUrl = currentPage.url,
-                onNavUp = { page.value = null },
+                onDismiss = { page = null },
                 modifier = Modifier.fillMaxSize(),
             )
 
             is WorkflowDefaultPage.Web -> WorkflowWebScreen(
                 url = currentPage.url,
                 modifier = Modifier.fillMaxSize(),
+                onDismiss = { page = null },
             )
 
             null -> Unit
