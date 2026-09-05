@@ -203,5 +203,15 @@ class WorkflowEditorManifestCoverageTest {
             )
         }
     }
+
+    @Test
+    fun defaultManifestExporterExportsValidJson() {
+        val exportedJson = DefaultManifestExporter.generateManifestJson()
+        assertTrue(exportedJson.isNotBlank())
+        assertTrue(exportedJson.contains("\"nodeTypes\""))
+        assertTrue(exportedJson.contains("\"categories\""))
+        assertTrue(exportedJson.contains("\"capabilities\""))
+        assertTrue(exportedJson.contains("flow.start"))
+    }
 }
 

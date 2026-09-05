@@ -14,6 +14,7 @@
 </p>
 
 <p align="center">
+  <a href="#-可视化工作流编辑器-workflow-editor-web">可视化编辑器</a> •
   <a href="#1-项目架构与模块划分">项目架构</a> •
   <a href="#2-执行模型与调度内核">调度内核</a> •
   <a href="#3-模板与表达式引擎">表达式引擎</a> •
@@ -31,10 +32,31 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square" alt="License" /></a>
+  <a href="https://xiaoyvyv.github.io/workflow-cmp/"><img src="https://img.shields.io/badge/Online_Demo-GitHub_Pages-22C55E?style=flat-square&logo=githubpages&logoColor=white" alt="GitHub Pages Demo" /></a>
   <img src="https://img.shields.io/badge/Architecture-DAG_Orchestrator-8B5CF6?style=flat-square" alt="DAG Architecture" />
   <img src="https://img.shields.io/badge/Concurrency-Coroutines_%26_Flow-F59E0B?style=flat-square" alt="Coroutines and Flow" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Build & Tests" />
 </p>
+
+---
+
+## 🎨 可视化工作流编辑器 (Workflow Editor Web)
+
+> 🚀 **在线直接体验**：[https://xiaoyvyv.github.io/workflow-cmp/](https://xiaoyvyv.github.io/workflow-cmp/)
+>
+> 📖 **服务端与 AI 桥接文档**：详见 [docs/EditorServer.md](docs/EditorServer.md)。
+
+`workflow-cmp` 提供了开箱即用的现代化 Web 可视化 DAG 编排编辑器与全平台设备桥接通信套件（`:workflow-editor-bridge` / `:workflow-editor-mcp`），支持纯浏览器前端免安装直接使用，亦可直接连接真机/桌面端无缝调试与执行。
+
+### ✨ 编辑器主要特性
+
+- **🖱️ 流畅拖拽与无限画布**：左侧节点库直接拖入画布，支持画布自由缩放、平移定位与框选。
+- **📐 智能端口与连线校验**：严格校验控制流与数据流连接规则，防止循环死锁、类型不匹配或悬空端口。
+- **🌲 自动层次排版 (Sugiyama Layout)**：一键对复杂 DAG 图进行整洁的分层自动排版，节点关系清晰直观。
+- **🎯 精准错误高亮溯源**：工作流执行异常时自动弹出控制台，并在画布中精准单次高亮对应报错节点，点击空白即可恢复，排错一目了然。
+- **⚡ 实时设备双向同步**：通过 WebSocket 与 Android / Desktop / iOS 宿主应用实时同步，支持下发运行、单步监控、副作用交互处理与取消操作。
+- **🤖 MCP (Model Context Protocol) 赋能**：内置标准 MCP 协议服务，支持 Claude、Cursor 等 AI 助手直接理解节点 Spec、自动生成工作流并调用执行。
+- **🔒 乐观锁版本并发保护**：多端编辑协同内置 Revision 修订号机制，保存时遇冲突自动提示是否覆盖或合并。
 
 ---
 
@@ -83,18 +105,19 @@
 
 ## 目录
 
-1. [项目架构与模块划分](#1-项目架构与模块划分)
+1. [可视化工作流编辑器 (Workflow Editor Web)](#-可视化工作流编辑器-workflow-editor-web)
+2. [项目架构与模块划分](#1-项目架构与模块划分)
     1. [模块结构](#11-模块结构)
     2. [核心设计要点](#12-核心设计要点)
-2. [执行模型与调度内核](#2-执行模型与调度内核)
+3. [执行模型与调度内核](#2-执行模型与调度内核)
     1. [调度机制与生命周期](#21-调度机制与生命周期)
     2. [分支与合流 (Fork & Join)](#22-分支与合流-fork--join)
     3. [平台副作用与挂起交互 (SideEffect)](#23-平台副作用与挂起交互-sideeffect)
-3. [模板与表达式引擎](#3-模板与表达式引擎)
+4. [模板与表达式引擎](#3-模板与表达式引擎)
     1. [命名空间访问](#31-命名空间访问)
     2. [运算符优先级与语法规则](#32-运算符优先级与语法规则)
     3. [类型转换与真值判定](#33-类型转换与真值判定)
-4. [内置节点参考](#4-内置节点参考)
+5. [内置节点参考](#4-内置节点参考)
     1. [流程控制与分支 (`flow.*`)](#41-流程控制与分支-flow)
     2. [逻辑判断 (`control.*`)](#42-逻辑判断-control)
     3. [循环控制与迭代 (`loop.*`)](#43-循环控制与迭代-loop)
@@ -113,8 +136,8 @@
     16. [文件系统沙箱 (`file.*`)](#416-文件系统沙箱-file)
     17. [客户端动作与 UI 交互 (`action.*`, `ui.*`, `system.*`)](#417-客户端动作与-ui-交互-action-ui-system)
     18. [业务扩展节点 (`bilibili.*`)](#418-业务扩展节点-bilibili)
-5. [错误处理与调试](#5-错误处理与调试)
-6. [快速接入与示例](#6-快速接入与示例)
+6. [错误处理与调试](#5-错误处理与调试)
+7. [快速接入与示例](#6-快速接入与示例)
     1. [创建运行时 (`WorkflowRuntimeFactory`)](#61-创建运行时-workflowruntimefactory)
     2. [执行工作流与事件监听](#62-执行工作流与事件监听)
     3. [Compose UI 交互宿主挂载](#63-compose-ui-交互宿主挂载)
@@ -142,6 +165,11 @@ workflow-cmp/
   │   ├── :workflow-node-bilibili    # [特定业务扩展] Bilibili Wbi 签名与 API 适配节点
   │   ├── :workflow-node-all         # [聚合装配] 内置节点聚合与运行时工厂 (WorkflowRuntimeFactory)
   │   └── :workflow-node-testkit     # [测试套件] 节点规格与执行自动化测试工具
+  │
+  ├── 可视化编排与 AI 桥接 (Editor & MCP Modules)
+  │   ├── :workflow-editor-bridge    # [全平台Bridge服务] 嵌入式 Ktor CIO 服务器、REST/WebSocket 同步与运行控制器
+  │   ├── :workflow-editor-mcp       # [MCP AI工具库] 标准 Model Context Protocol 协议支持，赋能 Cursor/Claude 等 Agent
+  │   └── workflow-editor-web/       # [Web可视化编辑器] 纯前端可视化 DAG 画布（支持拖拽、排版、单次高亮报错、GitHub Pages部署）
   │
   ├── 平台底座能力 (Platform Modules)
   │   ├── :workflow-platform         # [基础平台层] 音量/屏幕亮度管理、全屏控制器

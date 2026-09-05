@@ -21,4 +21,9 @@ data class ActionNodeExecutionResult(
  * 由宿主 ViewModel/平台层执行的副作用。
  */
 @Immutable
-interface ActionSideEffect
+interface ActionSideEffect {
+    /**
+     * 描述副作用的摘要信息，供日志、调试、Editor Bridge 与控制台展示。
+     */
+    fun describe(): String = this::class.simpleName ?: "SideEffect"
+}

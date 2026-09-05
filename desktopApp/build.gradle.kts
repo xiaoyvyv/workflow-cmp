@@ -10,8 +10,7 @@ plugins {
 dependencies {
     implementation(projects.shared)
     implementation(projects.workflowCore)
-    implementation(projects.workflowEditorBridgeContract)
-    implementation(projects.workflowEditorBridgeJvm)
+    implementation(projects.workflowEditorBridge)
     implementation(projects.workflowNodeAll)
 
     implementation(compose.desktop.currentOs)
@@ -20,7 +19,7 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.cio)
 
     implementation(libs.compose.ui.tooling.preview)
 }

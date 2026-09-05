@@ -3,19 +3,62 @@ import { state, getNodeTitle, ensureWorkflowCapabilities } from "../state.js";
 import { $, cleanJsonText } from "../utils.js";
 import { showToast } from "../ui/toast.js";
 import { showModalDialog, showImportWorkflowDialog } from "../ui/modal.js";
-import { showEvent } from "../console/console.js";
+import { showEvent, appendLog, openConsole, clearAllConsoleLogs } from "../console/console.js";
 import { inspectorIsValid } from "../inspector/inspector.js";
 import { executeAutoLayout } from "../canvas/layout.js";
+import { zoomFit } from "../canvas/interaction.js";
 
 export function baseUrl() {
-  const configured = $("device")?.value.trim().replace(/\/$/, "");
-  return configured || EditorConfig.defaultDeviceUrl;
+  let configured = $("device")?.value?.trim()?.replace(/\/+$/, "") || "";
+  if (configured && !configured.startsWith("http://") && !configured.startsWith("https://")) {
+    configured = `http://${configured}`;
+  }
+  if (configured) return configured;
+  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
+    return window.location.origin;
+  }
+  return EditorConfig.defaultDeviceUrl;
+}
+
+export function updateConnectionUI(status, deviceName = "") {
+  const dotEl = $("device-status-dot");
+  const connectBtn = $("connect");
+
+  if (dotEl) {
+    dotEl.className = `device-status-dot status-${status}`;
+    dotEl.title =
+      status === "connected"
+        ? `已连接: ${deviceName || "WorkflowCMP 设备"}`
+        : status === "connecting"
+        ? "正在连接设备..."
+        : status === "error"
+        ? "连接失败"
+        : "设备未连接";
+  }
+
+  if (connectBtn) {
+    connectBtn.classList.toggle("is-connected", status === "connected");
+    if (status === "connected") {
+      connectBtn.textContent = "已连接";
+      connectBtn.title = "设备已连接 (点击可重新连接)";
+    } else if (status === "connecting") {
+      connectBtn.textContent = "连接中";
+      connectBtn.title = "正在连接中...";
+    } else {
+      connectBtn.textContent = "连接";
+      connectBtn.title = "连接设备";
+    }
+  }
 }
 
 export function initializeDeviceAddress() {
   const deviceEl = $("device");
-  if (deviceEl && !deviceEl.value.trim()) {
-    deviceEl.value = EditorConfig.defaultDeviceUrl;
+  if (deviceEl) {
+    if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
+      deviceEl.value = window.location.origin;
+    } else if (!deviceEl.value.trim()) {
+      deviceEl.value = EditorConfig.defaultDeviceUrl;
+    }
   }
 }
 
@@ -24,14 +67,22 @@ export function applyWorkflowData(parsed, renderCallback) {
     throw new Error("工作流格式不正确，缺少 nodes 节点列表");
   }
   state.workflow = parsed;
+  if (!Array.isArray(state.workflow.edges)) {
+    state.workflow.edges = [];
+  }
   state.revision = 0;
   state.selectedNodeId = null;
+  state.selectedEdgeId = null;
   state.errorNodeIds.clear();
 
+  // 导入工作流时清空控制台历史日志与事件
+  clearAllConsoleLogs();
+
   // 导入后始终按当前选择的布局类型重新排版，避免保留其它环境的旧坐标。
-  executeAutoLayout(state.workflow, state.layoutDirection);
+  executeAutoLayout(state.workflow, state.layoutDirection || "dag-lr");
 
   if (renderCallback) renderCallback();
+  setTimeout(zoomFit, 30);
   showToast(`已成功导入工作流: ${parsed.name || parsed.id || ""}`, "success");
 }
 
@@ -45,7 +96,7 @@ export function authHeaders() {
     : {};
 }
 
-export function connectEvents() {
+export function connectEvents(renderCallback = null) {
   state.eventSocket?.close();
   const base = baseUrl();
   if (!base) return;
@@ -57,16 +108,16 @@ export function connectEvents() {
   state.eventSocket = new WebSocket(eventUrl);
   state.eventSocket.onopen = () => {
     showToast("设备事件连接已建立", "success");
-    showEvent({ type: EditorConfig.eventType.bridgeConnected }, getNodeTitle);
+    showEvent({ type: EditorConfig.eventType.bridgeConnected }, getNodeTitle, renderCallback);
   };
   state.eventSocket.onmessage = (event) => {
     try {
-      showEvent(JSON.parse(event.data), getNodeTitle);
+      showEvent(JSON.parse(event.data), getNodeTitle, renderCallback);
     } catch {
       showEvent({
         type: EditorConfig.eventType.bridgeMessage,
         message: event.data,
-      }, getNodeTitle);
+      }, getNodeTitle, renderCallback);
     }
   };
   state.eventSocket.onerror = () => {
@@ -74,7 +125,7 @@ export function connectEvents() {
     showEvent({
       type: EditorConfig.eventType.bridgeError,
       message: "事件连接失败",
-    }, getNodeTitle);
+    }, getNodeTitle, renderCallback);
   };
 }
 
@@ -108,22 +159,13 @@ export function validateWorkflowLocal(workflow = state.workflow) {
   if (endNodes.length === 0) {
     issues.push({
       code: "missing_end_node",
-      message: "工作流必须包含一个结束节点 (flow.end)",
-      level: "error",
-    });
-  } else if (endNodes.length > 1) {
-    endNodes.slice(1).forEach((node) => {
-      issues.push({
-        code: "multiple_end_nodes",
-        message: `工作流只能包含一个结束节点 (flow.end)，当前存在 ${endNodes.length} 个`,
-        level: "error",
-        nodeId: node.id,
-      });
+      message: "工作流建议包含至少一个结束节点 (flow.end)",
+      level: "warning",
     });
   }
 
   return {
-    isValid: issues.length === 0,
+    isValid: issues.filter((i) => i.level === "error").length === 0,
     issues,
   };
 }
@@ -216,11 +258,36 @@ export async function saveWorkflowRemote(renderCallback) {
   );
   if (response.status === EditorConfig.httpConflict) {
     const current = await response.json();
-    showModalDialog({
+    const remoteRev = current.current?.revision ?? "未知";
+    const confirmed = await showModalDialog({
       title: "版本冲突",
-      message: `设备端当前版本为 ${current.current?.revision ?? "未知"}，本地版本为 ${state.revision}，请先拉取最新版本或重新加载。`,
+      message: `设备端当前版本为 ${remoteRev}，本地版本为 ${state.revision}。\n\n是否强制覆盖推送到设备端？`,
       type: "warning",
+      confirmText: "覆盖推送",
+      cancelText: "取消",
     });
+    if (confirmed) {
+      const forceResponse = await fetch(
+        `${baseUrl()}${EditorConfig.api.workflows}/${encodeURIComponent(state.workflow.id)}`,
+        {
+          method: "PUT",
+          headers: { ...authHeaders(), "content-type": "application/json" },
+          body: JSON.stringify({
+            baseRevision: current.current?.revision ?? 0,
+            workflow: state.workflow,
+          }),
+        },
+      );
+      if (!forceResponse.ok) {
+        throw Error((await forceResponse.text()) || forceResponse.statusText);
+      }
+      const document = await forceResponse.json();
+      state.workflow = document.workflow;
+      state.revision = document.revision;
+      showEvent({ type: EditorConfig.eventType.workflowSaved, revision: state.revision }, getNodeTitle);
+      if (renderCallback) renderCallback();
+      return true;
+    }
     return false;
   }
   if (!response.ok) {
@@ -234,30 +301,81 @@ export async function saveWorkflowRemote(renderCallback) {
   return true;
 }
 
+export async function performConnect(renderCallback, isAuto = false) {
+  const targetUrl = baseUrl();
+  if (!targetUrl) {
+    if (!isAuto) showToast("请填写设备地址，例如 http://localhost:8080", "warning");
+    return;
+  }
+  const connectBtn = $("connect");
+  updateConnectionUI("connecting");
+  if (connectBtn) connectBtn.disabled = true;
+
+  try {
+    // 1. 获取设备信息
+    let deviceName = "";
+    try {
+      const deviceRes = await fetch(`${targetUrl}${EditorConfig.api.device}`, {
+        headers: authHeaders(),
+      });
+      if (deviceRes.ok) {
+        const deviceData = await deviceRes.json();
+        deviceName = deviceData.name || "";
+      }
+    } catch {
+      // ignore optional device descriptor failure
+    }
+
+    // 2. 获取 Manifest 节点类型元数据
+    const response = await fetch(`${targetUrl}${EditorConfig.api.manifest}`, {
+      headers: authHeaders(),
+    });
+    if (!response.ok) throw Error(`HTTP ${response.status}: ${response.statusText}`);
+    const payload = await response.json();
+    state.manifest = payload.manifest ?? payload;
+
+    // 3. 建立 WebSocket 实时事件通道
+    connectEvents(renderCallback);
+
+    // 4. 更新连接状态 UI 并记录日志
+    updateConnectionUI("connected", deviceName);
+    if (renderCallback) renderCallback();
+    const count = state.manifest?.nodeTypes?.length || 0;
+    showToast(`已成功连接设备${deviceName ? ` (${deviceName})` : ""}`, "success");
+    appendLog(`🔗 成功连接设备: ${targetUrl}${deviceName ? ` [${deviceName}]` : ""}，共加载 ${count} 个节点定义`, "success");
+  } catch (error) {
+    updateConnectionUI("error");
+    appendLog(`❌ 连接设备失败: ${error.message}`, "error");
+    if (!isAuto) {
+      showModalDialog({
+        title: "连接设备失败",
+        message: `无法连接设备：${error.message}\n请检查设备端服务是否已启动，且 PC 与手机在同一 Wi-Fi 局域网内。`,
+        type: "error",
+      });
+    }
+  } finally {
+    if (connectBtn) connectBtn.disabled = false;
+  }
+}
+
 export function initializeToolbarActions(renderCallback) {
   const fileInput = $("file");
 
-  $("connect")?.addEventListener("click", async () => {
-    if (!baseUrl()) {
-      showToast("请填写设备地址，例如 http://localhost:8080", "warning");
-      return;
+  $("connect")?.addEventListener("click", () => {
+    performConnect(renderCallback, false);
+  });
+
+  $("device")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      performConnect(renderCallback, false);
     }
-    try {
-      const response = await fetch(`${baseUrl()}${EditorConfig.api.manifest}`, {
-        headers: authHeaders(),
-      });
-      if (!response.ok) throw Error(response.statusText);
-      const payload = await response.json();
-      state.manifest = payload.manifest ?? payload;
-      connectEvents();
-      if (renderCallback) renderCallback();
-      showToast("成功连接到设备并获取 Manifest", "success");
-    } catch (error) {
-      showModalDialog({
-        title: "连接设备失败",
-        message: `无法连接设备：${error.message}\n请检查设备端服务是否已启动并在监听该端口。`,
-        type: "error",
-      });
+  });
+
+  $("token")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      performConnect(renderCallback, false);
     }
   });
 
@@ -277,7 +395,10 @@ export function initializeToolbarActions(renderCallback) {
       state.revision = document.revision;
       state.selectedNodeId = null;
       state.errorNodeIds.clear();
+      clearAllConsoleLogs();
+      executeAutoLayout(state.workflow, state.layoutDirection || "dag-lr");
       if (renderCallback) renderCallback();
+      setTimeout(zoomFit, 30);
       showToast(`工作流已读取 (版本: ${state.revision})`, "success");
     } catch (error) {
       showModalDialog({
@@ -361,11 +482,16 @@ export function initializeToolbarActions(renderCallback) {
         },
       );
       if (!response.ok) {
-        throw Error((await response.text()) || response.statusText);
+        const errorText = (await response.text()) || `HTTP ${response.status} ${response.statusText}`;
+        openConsole("logs");
+        appendLog(`❌ 推送执行失败: ${errorText}`, "error");
+        throw Error(errorText);
       }
       showToast("已成功向设备发起工作流执行请求", "success");
-      showEvent(await response.json(), getNodeTitle);
+      showEvent(await response.json(), getNodeTitle, renderCallback);
     } catch (error) {
+      openConsole("logs");
+      appendLog(`❌ 运行请求异常: ${error.message}`, "error");
       showModalDialog({
         title: "运行失败",
         message: error.message,
@@ -469,19 +595,5 @@ export function initializeToolbarActions(renderCallback) {
 }
 
 export async function tryAutoConnect(renderCallback) {
-  const base = baseUrl();
-  if (!base) return;
-  try {
-    const response = await fetch(`${base}${EditorConfig.api.manifest}`, {
-      headers: authHeaders(),
-    });
-    if (response.ok) {
-      const payload = await response.json();
-      state.manifest = payload.manifest ?? payload;
-      connectEvents();
-      if (renderCallback) renderCallback();
-    }
-  } catch {
-    // Ignore silently if bridge server is not reachable yet
-  }
+  await performConnect(renderCallback, true);
 }

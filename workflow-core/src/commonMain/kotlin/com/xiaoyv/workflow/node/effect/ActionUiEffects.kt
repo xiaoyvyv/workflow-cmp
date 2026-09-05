@@ -19,7 +19,9 @@ data class ActionShowToastEffect(
      * 要展示给用户的提示文本。
      */
     val message: String,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "弹窗提示 \"$message\""
+}
 
 /**
  * 请求宿主将文本写入系统剪贴板的副作用。
@@ -32,7 +34,9 @@ data class ActionWriteClipboardEffect(
      * 要写入系统剪贴板的文本。
      */
     val text: String,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "写入剪贴板 \"$text\""
+}
 
 /**
  * 请求宿主弹窗向用户进行二次确认的副作用。
@@ -43,7 +47,9 @@ data class ActionConfirmEffect(
     val message: String,
     val confirmText: String = "",
     val cancelText: String = "",
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "二次确认框 \"${message.ifEmpty { title }}\""
+}
 
 /**
  * 请求宿主调起系统分享菜单的副作用。
@@ -53,7 +59,9 @@ data class ActionShareEffect(
     val title: String = "",
     val text: String,
     val url: String = "",
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "系统分享 \"${text.ifEmpty { title }}\""
+}
 
 /**
  * 请求宿主发送本地通知的副作用。
@@ -62,7 +70,9 @@ data class ActionShareEffect(
 data class ActionNotificationEffect(
     val title: String = "",
     val content: String,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "发送通知 \"$content\""
+}
 
 /**
  * 请求宿主读取系统剪贴板的副作用。
@@ -70,7 +80,9 @@ data class ActionNotificationEffect(
 @Immutable
 data class ActionReadClipboardEffect(
     val outputKey: String = "result",
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "读取系统剪贴板"
+}
 
 /**
  * 请求宿主触发设备震动的副作用。
@@ -78,7 +90,9 @@ data class ActionReadClipboardEffect(
 @Immutable
 data class ActionVibrateEffect(
     val durationMillis: Long = 100L,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "设备震动 (${durationMillis}ms)"
+}
 
 /**
  * 请求宿主弹出文本输入对话框的副作用。
@@ -92,7 +106,9 @@ data class ActionInputDialogEffect(
     val confirmText: String = "",
     val cancelText: String = "",
     val onlyNumber: Boolean = false,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "输入弹窗 \"${title.ifEmpty { "请输入" }}\""
+}
 
 /**
  * 请求宿主展示、更新或关闭工作流进度任务的副作用。
@@ -116,7 +132,12 @@ data class ActionProgressDialogEffect(
     val mode: String = ActionProgressDialogMode.INDETERMINATE,
     val progress: Float? = null,
     val maxProgress: Float? = null,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String {
+        val detail = title.ifEmpty { message }
+        return if (detail.isNotEmpty()) "进度任务 [$action] $detail" else "进度任务 [$action]"
+    }
+}
 
 /**
  * 请求宿主调起全屏图片预览的副作用。
@@ -129,7 +150,9 @@ data class ActionImagePreviewEffect(
     val index: Int = 0,
     val images: List<String> = emptyList(),
     val headers: SerializeMap<String, String> = persistentMapOf(),
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "预览图片 (共 ${images.size} 张, 当前: ${index + 1})"
+}
 
 /**
  * 请求宿主调起全屏视频播放预览的副作用。
@@ -141,7 +164,9 @@ data class ActionImagePreviewEffect(
 data class ActionVideoPreviewEffect(
     val url: String = "",
     val headers: SerializeMap<String, String> = persistentMapOf(),
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "预览视频 $url"
+}
 
 /**
  * 列表选择对话框的单项选项模型。
@@ -183,7 +208,9 @@ data class ActionSelectDialogEffect(
     val outputKey: String = "result",
     val confirmText: String = "",
     val cancelText: String = "",
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "选择弹窗 \"${title.ifEmpty { "请选择" }}\""
+}
 
 /**
  * 请求宿主弹出 BottomSheet 交互以同步 Web Cookie 到本地 CookieStore 的副作用。
@@ -199,4 +226,6 @@ data class ActionSyncCookieEffect(
     val title: String = "同步 Cookie",
     val headers: Map<String, String> = emptyMap(),
     val userAgent: String = "",
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "同步 Cookie $url"
+}

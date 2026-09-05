@@ -1,14 +1,22 @@
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
+    id("workflow.library")
 }
 
-kotlin { jvmToolchain(21) }
+kotlin {
+    android {
+        namespace = "com.xiaoyv.workflow.editor.mcp"
+    }
 
-dependencies {
-    implementation(projects.workflowCore)
-    implementation(projects.workflowEditorBridgeContract)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.core)
-    testImplementation(kotlin("test"))
+    sourceSets {
+        commonMain.dependencies {
+            api(projects.workflowCore)
+            api(projects.workflowEditorBridge)
+            implementation(libs.bundles.kotlinx)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotlinx.immutable)
+        }
+    }
 }

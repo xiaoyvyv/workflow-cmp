@@ -2,25 +2,38 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Workflow Editor</title>
     <link href="./style.css" rel="stylesheet"/>
 </head>
 <body>
 <header class="toolbar">
-    <strong>Workflow Editor</strong>
-    <input id="device" placeholder="设备地址，例如 http://localhost:8080" value="http://localhost:8080"/>
-    <input id="token" placeholder="可选设备 token" type="password"/>
-    <button id="connect">连接设备</button>
-    <button id="load">读取</button>
-    <button id="save">保存</button>
-    <button id="validate">设备校验</button>
-    <button id="run">运行</button>
+    <div class="toolbar-brand">
+        <strong>Workflow Editor</strong>
+    </div>
+
+    <div class="device-input-group">
+        <span id="device-status-dot" class="device-status-dot status-disconnected" title="设备未连接"></span>
+        <input id="device" class="device-input" placeholder="设备地址 (如 http://192.168.0.102:8080)"/>
+    </div>
+    <input id="token" class="token-input" placeholder="Token (可选)" type="password"/>
+    <button id="connect" type="button" class="btn-connect">连接</button>
+
     <span class="toolbar-separator"></span>
-    <button id="manifest">导入 Manifest</button>
-    <button id="workflow">导入工作流</button>
-    <button id="export">导出工作流</button>
-    <input hidden id="file" type="file"/>
+
+    <div class="toolbar-action-group">
+        <button id="load" type="button">读取</button>
+        <button id="save" type="button" class="btn-save">保存</button>
+        <button id="validate" type="button">校验</button>
+        <button id="run" type="button" class="btn-run">运行</button>
+    </div>
+
+    <div class="toolbar-right">
+        <button id="manifest" type="button">导入 Manifest</button>
+        <button id="workflow" type="button">导入工作流</button>
+        <button id="export" type="button">导出工作流</button>
+        <input hidden id="file" type="file"/>
+    </div>
 </header>
 <main id="editor-layout">
     <aside class="palette-panel" id="panel-palette">
@@ -43,6 +56,7 @@
                 <div id="canvas-viewport">
                     <svg id="edges"></svg>
                     <div id="nodes"></div>
+                    <svg id="edges-selected"></svg>
                 </div>
             </section>
             <div class="canvas-controls" id="canvas-controls">
@@ -137,6 +151,31 @@
 </main>
 <div id="modal-container"></div>
 <div id="toast-container"></div>
+<div id="small-screen-overlay" class="small-screen-overlay">
+    <div class="small-screen-card">
+        <div class="small-screen-icon-wrapper">
+            <div class="small-screen-pulse"></div>
+            <span class="small-screen-icon">💻</span>
+        </div>
+        <span class="small-screen-badge">建议大屏操作</span>
+        <h3 class="small-screen-title">可视区域过小</h3>
+        <p class="small-screen-desc">
+            Workflow Editor 包含节点库、多维画布与属性检查器。<br/>
+            为了获得精准的节点拖拽、连线与配置体验，建议在 <strong>PC 浏览器</strong>、<strong>Mac</strong> 或<strong>横屏平板（iPad）</strong>等大屏设备上进行操作。
+        </p>
+        <div class="small-screen-resolution" id="small-screen-res-info">
+            当前视口：<span id="screen-current-size">-- × --</span> · 建议宽度 ≥ 768px
+        </div>
+        <div class="small-screen-actions">
+            <button type="button" class="small-screen-btn btn-copy-url" id="btn-copy-web-url">
+                <span>📋</span> 复制当前访问地址
+            </button>
+            <button type="button" class="small-screen-btn btn-dismiss-overlay" id="btn-dismiss-small-screen">
+                仍然在此体验
+            </button>
+        </div>
+    </div>
+</div>
 <script type="module" src="./app.js"></script>
 </body>
 </html>

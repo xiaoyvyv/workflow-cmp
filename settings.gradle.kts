@@ -44,13 +44,9 @@ include(":shared")
 
 include(":workflow-core")
 
-include(":workflow-editor-bridge-contract")
-
-include(":workflow-editor-bridge-jvm")
+include(":workflow-editor-bridge")
 
 include(":workflow-editor-mcp")
-
-include(":workflow-editor-mcp-jvm")
 
 include(":workflow-platform-room")
 

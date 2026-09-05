@@ -1,10 +1,22 @@
 import { EditorConfig } from "../config.js";
+import { state } from "../state.js";
 import { $, escapeHtml } from "../utils.js";
 import { showToast } from "../ui/toast.js";
 
 let eventCount = 0;
 let logCount = 0;
 let consoleExpandedHeight = 220;
+let runStartTime = 0;
+let runStepCount = 0;
+
+function formatSideEffect(effect) {
+  if (!effect) return "";
+  if (typeof effect === "string") return effect;
+  if (typeof effect === "object") {
+    return effect.message || effect.title || JSON.stringify(effect);
+  }
+  return String(effect);
+}
 
 export function appendLog(message, level = "info") {
   logCount++;
@@ -29,7 +41,7 @@ export function appendLog(message, level = "info") {
   if (pane) pane.scrollTop = pane.scrollHeight;
 }
 
-export function showEvent(value, getNodeTitle = null) {
+export function showEvent(value, getNodeTitle = null, renderCallback = null) {
   eventCount++;
   const badge = $("event-count-badge");
   if (badge) badge.textContent = String(eventCount);
@@ -51,32 +63,142 @@ export function showEvent(value, getNodeTitle = null) {
 
   if (typeof value === "object" && value !== null) {
     const type = value.type || "";
-    if (type === EditorConfig.eventType.bridgeConnected) {
+    const types = EditorConfig.eventType;
+    if (type === types.bridgeConnected) {
       appendLog("🔗 WebSocket 桥接事件连接已建立", "success");
-    } else if (type === EditorConfig.eventType.bridgeError) {
+    } else if (type === types.bridgeError) {
       appendLog(`⚠️ 桥接事件异常: ${value.message || ""}`, "error");
-    } else if (type === EditorConfig.eventType.workflowSaved) {
+    } else if (type === types.workflowSaved) {
       appendLog(`💾 工作流已保存至设备 (版本: ${value.revision})`, "success");
-    } else if (type === "engine.workflow.started") {
-      appendLog(`🚀 工作流开始运行 (WorkflowId: ${value.workflowId || ""})`, "info");
-    } else if (type === "engine.node.started") {
-      const title = getNodeTitle ? getNodeTitle(value.nodeId) : value.nodeId;
-      appendLog(`▶️ 节点开始执行: [${title}] (${value.nodeId})`, "info");
-    } else if (type === "engine.node.completed") {
-      const title = getNodeTitle ? getNodeTitle(value.nodeId) : value.nodeId;
-      appendLog(`✅ 节点执行完成: [${title}] -> 输出端口: ${value.outputPortId || "next"}`, "success");
-    } else if (type === "engine.side_effect.requested") {
-      appendLog(`⚡ 节点请求副作用: ${value.nodeId} (${JSON.stringify(value.sideEffect || {})})`, "warn");
-    } else if (type === "engine.workflow.completed") {
-      appendLog(`🎉 工作流执行完毕 (状态: ${value.status || "success"}, 耗时: ${value.durationMs || 0}ms, 步骤: ${value.stepCount || 0})`, "success");
-    } else if (type === "engine.workflow.failed") {
-      appendLog(`❌ 工作流执行失败: [${value.errorCode || "error"}] ${value.message || ""} (节点: ${value.nodeId || "unknown"})`, "error");
-    } else if (type === "editor.capabilities.auto_completed") {
+    } else if (type === types.runStarted || type === "engine.workflow.started") {
+      runStartTime = value.timestampMillis || Date.now();
+      runStepCount = 0;
+      const wfId = value.workflowId || value.message || value.runId || "";
+      appendLog(`🚀 启动工作流 [${wfId}]`, "info");
+    } else if (type === types.nodeStarted || type === "engine.node.started") {
+      const nodeId = value.nodeId || "";
+      const title = getNodeTitle ? getNodeTitle(nodeId) : "";
+      const displayNode = title && title !== nodeId ? `[${title}] (${nodeId})` : nodeId;
+      appendLog(`▶️ 准备执行节点: ${displayNode}`, "info");
+    } else if (type === types.nodeCompleted || type === "engine.node.completed") {
+      runStepCount++;
+      const nodeId = value.nodeId || "";
+      const title = getNodeTitle ? getNodeTitle(nodeId) : "";
+      const displayNode = title && title !== nodeId ? `${title}` : nodeId;
+      const portId = value.outputPortId || (value.message && !value.message.startsWith("{") ? value.message : "next");
+      const outputData = value.output !== undefined && value.output !== null && typeof value.output === "object" && Object.keys(value.output).length > 0
+        ? ` → 输出: ${JSON.stringify(value.output)}`
+        : "";
+      appendLog(`✅ 节点 [${displayNode}] 执行完成 (出口: ${portId})${outputData}`, "success");
+    } else if (type === types.sideEffectRequested || type === "engine.side_effect.requested") {
+      const nodeId = value.nodeId || "";
+      const title = getNodeTitle ? getNodeTitle(nodeId) : "";
+      const displayNode = title && title !== nodeId ? `${title}` : nodeId;
+      const effectDesc = formatSideEffect(value.sideEffect || value.effect || value.message);
+      appendLog(`⚡ 触发系统动作 [${displayNode}]: ${effectDesc}`, "warn");
+    } else if (type === types.runCompleted || type === "engine.workflow.completed") {
+      const duration = value.durationMs ?? Math.max(0, Date.now() - runStartTime);
+      const steps = value.stepCount ?? runStepCount;
+      const status = value.status || "COMPLETED";
+      appendLog(`🏁 工作流运行结束 (状态: ${status}, 共 ${steps} 步, 耗时: ${duration}ms)`, "success");
+    } else if (type === types.runFailed || type === "engine.workflow.failed") {
+      let rawMsg = value.message || value.error?.message || value.errorCode || "未知执行异常";
+      if (typeof value.details === "object" && value.details && Object.keys(value.details).length > 0) {
+        rawMsg += `\n(详情: ${JSON.stringify(value.details, null, 2)})`;
+      }
+
+      // 提取目标出错节点 ID
+      let targetNodeId = value.nodeId || value.error?.nodeId || "";
+      if (!targetNodeId && typeof rawMsg === "string") {
+        const traceMatch = rawMsg.match(/📍\s*节点标识\s*:\s*\[([^\]]+)\]/);
+        if (traceMatch && traceMatch[1]) {
+          targetNodeId = traceMatch[1].trim();
+        } else {
+          const bracketMatch = rawMsg.match(/\[([a-zA-Z0-9_\-\.]+)\]/);
+          if (bracketMatch && bracketMatch[1] && state.workflow?.nodes?.some((n) => n.id === bracketMatch[1])) {
+            targetNodeId = bracketMatch[1].trim();
+          }
+        }
+      }
+
+      // 如果匹配到了对应节点，自动选中并单次高亮提示
+      if (targetNodeId && state.workflow?.nodes?.some((n) => n.id === targetNodeId)) {
+        state.selectedNodeId = targetNodeId;
+        state.errorNodeIds.add(targetNodeId);
+        if (renderCallback) renderCallback();
+
+        setTimeout(() => {
+          const nodeEl = $(`node-${targetNodeId}`);
+          if (nodeEl) {
+            nodeEl.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+            nodeEl.classList.remove("node-error-flash");
+            void nodeEl.offsetWidth; // 触发 reflow 重启动画
+            nodeEl.classList.add("node-error-flash");
+            setTimeout(() => nodeEl.classList.remove("node-error-flash"), 2000);
+          }
+        }, 60);
+      }
+
+      // 运行发生异常时，自动展开并切换到运行日志控制台
+      openConsole("logs");
+
+      // 控制台日志与 Toast 提示（与 core 模块 buildFormattedTraceLog 格式保持一致）
+      if (typeof rawMsg === "string" && (rawMsg.includes("[WORKFLOW ERROR TRACE]") || rawMsg.includes("========"))) {
+        appendLog(rawMsg, "error");
+        const reasonLine = rawMsg
+          .split("\n")
+          .find((l) => l.includes("错误原因") || l.includes("排查建议"))
+          ?.replace(/^.*?[：:]\s*/, "") || "工作流执行失败，请查看控制台溯源报告";
+        showToast(`执行失败: ${reasonLine}`, "error", 4500);
+      } else {
+        const title = (targetNodeId && getNodeTitle) ? getNodeTitle(targetNodeId) : "";
+        const displayNode = title && title !== targetNodeId ? `[${title}] (${targetNodeId})` : (targetNodeId ? `[${targetNodeId}]` : "");
+        const nodePrefix = displayNode ? `${displayNode} ` : "";
+        appendLog(`❌ 执行发生异常: ${nodePrefix}${rawMsg}`, "error");
+        showToast(`执行发生异常: ${rawMsg}`, "error", 4000);
+      }
+    } else if (type === types.capabilitiesAutoCompleted || type === "editor.capabilities.auto_completed") {
       appendLog(`⚡ 自动推导补全工作流所需权限: ${(value.capabilities || []).join(", ")}`, "info");
     } else if (value.message) {
       appendLog(`${value.message}`, "info");
     }
   }
+}
+
+export function openConsole(targetTab = "logs") {
+  const consolePanel = $("console-panel");
+  const toggleText = $("console-toggle-text");
+  if (consolePanel) {
+    consolePanel.classList.remove("collapsed");
+    consolePanel.style.height = `${consoleExpandedHeight}px`;
+    if (toggleText) toggleText.textContent = "▼ 收起控制台";
+  }
+  if (targetTab) {
+    const tabs = document.querySelectorAll(".console-tab");
+    const panes = document.querySelectorAll(".console-tab-pane");
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === targetTab));
+    panes.forEach((pane) => {
+      pane.classList.toggle("active", pane.id === `pane-${targetTab}`);
+    });
+  }
+}
+
+export function clearAllConsoleLogs() {
+  const eventsEl = $("events");
+  if (eventsEl) {
+    eventsEl.textContent = "";
+  }
+  eventCount = 0;
+  const eventBadge = $("event-count-badge");
+  if (eventBadge) eventBadge.textContent = "0";
+
+  const logsEl = $("logs");
+  if (logsEl) {
+    logsEl.innerHTML = "";
+  }
+  logCount = 0;
+  const logBadge = $("log-count-badge");
+  if (logBadge) logBadge.textContent = "0";
 }
 
 export function initializeConsoleAndResizers() {

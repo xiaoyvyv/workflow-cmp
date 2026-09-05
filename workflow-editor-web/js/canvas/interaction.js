@@ -1,6 +1,6 @@
 import { EditorConfig } from "../config.js";
 import { state, nodeById, specForNode, newWorkflow, clearDraft, saveDraft } from "../state.js";
-import { $ } from "../utils.js";
+import { $, generateUUID } from "../utils.js";
 import { showToast } from "../ui/toast.js";
 import { showModalDialog } from "../ui/modal.js";
 import { showEvent } from "../console/console.js";
@@ -384,23 +384,12 @@ export function initializeCanvasInteractions(renderCallback) {
         return;
       }
 
-      if (state.selectedEdgeId === clickedEdgeId) {
-        edgeGroup.classList.add("edge-deleting");
-        setTimeout(() => {
-          state.workflow.edges = state.workflow.edges.filter((e) => e.id !== clickedEdgeId);
-          state.selectedEdgeId = null;
-          drawEdges();
-          saveDraft(true);
-          showToast("已删除连线", "info", 1200);
-        }, 60);
-      } else {
-        state.selectedEdgeId = clickedEdgeId;
-        state.selectedNodeId = null;
-        if (renderCallback) renderCallback();
-        else {
-          drawEdges();
-          saveDraft();
-        }
+      state.selectedEdgeId = clickedEdgeId;
+      state.selectedNodeId = null;
+      if (renderCallback) renderCallback();
+      else {
+        drawEdges();
+        saveDraft();
       }
       return;
     }
@@ -424,10 +413,11 @@ export function initializeCanvasInteractions(renderCallback) {
       return;
     }
 
-    // 4. 点击画布空白区域：开启视口拖拽平移（Pan）
+    // 4. 点击画布空白区域：取消选中并恢复高亮状态，开启视口拖拽平移（Pan）
     state.selectedNodeId = null;
     state.selectedEdgeId = null;
     state.pendingLink = null;
+    state.errorNodeIds.clear();
     state.panning = {
       startX: event.clientX,
       startY: event.clientY,
@@ -451,7 +441,8 @@ export function initializeCanvasInteractions(renderCallback) {
         state.workflow.edges = state.workflow.edges.filter((e) => e.id !== edgeId);
         if (state.selectedEdgeId === edgeId) state.selectedEdgeId = null;
         drawEdges();
-        saveDraft(true);
+        if (renderCallback) renderCallback();
+        else saveDraft(true);
       }, 100);
     }
   });
@@ -529,7 +520,7 @@ export function initializeCanvasInteractions(renderCallback) {
           );
           const kind = outputPort ? (outputPort.kind || "control") : "control";
           state.workflow.edges.push({
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             source: { nodeId: state.linking.nodeId, portId: state.linking.portId },
             target,
             kind,
@@ -556,7 +547,154 @@ export function initializeCanvasInteractions(renderCallback) {
     }
   });
 
+  // 平板电脑 / 触控屏多指手势支持 (Pinch to Zoom & Two-Finger Pan on Tablets / iPad)
+  let initialTouchDistance = 0;
+  let initialTouchZoom = 1.0;
+  let initialTouchCenter = { x: 0, y: 0 };
+  let initialPanOnTouch = { x: 0, y: 0 };
+  let isPinching = false;
+
+  canvasEl.addEventListener(
+    "touchstart",
+    (event) => {
+      if (event.touches.length === 2) {
+        event.preventDefault();
+        isPinching = true;
+
+        // 终止单指可能存在的连线/拖拽/单指平移
+        if (state.dragging) state.dragging = null;
+        if (state.linking) {
+          highlightCompatiblePorts(null, false);
+          state.linking = null;
+        }
+        if (state.panning) {
+          state.panning = null;
+          canvasEl.classList.remove("panning");
+        }
+
+        const t0 = event.touches[0];
+        const t1 = event.touches[1];
+        initialTouchDistance = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        initialTouchZoom = state.zoom || 1.0;
+        initialTouchCenter = {
+          x: (t0.clientX + t1.clientX) / 2,
+          y: (t0.clientY + t1.clientY) / 2,
+        };
+        initialPanOnTouch = {
+          x: state.panX || 0,
+          y: state.panY || 0,
+        };
+      }
+    },
+    { passive: false }
+  );
+
+  canvasEl.addEventListener(
+    "touchmove",
+    (event) => {
+      if (isPinching && event.touches.length === 2) {
+        event.preventDefault();
+        const t0 = event.touches[0];
+        const t1 = event.touches[1];
+        const currentDistance = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        const currentCenter = {
+          x: (t0.clientX + t1.clientX) / 2,
+          y: (t0.clientY + t1.clientY) / 2,
+        };
+
+        if (initialTouchDistance > 10) {
+          const scale = currentDistance / initialTouchDistance;
+          const targetZoom = initialTouchZoom * scale;
+          setCanvasZoom(targetZoom, {
+            clientX: currentCenter.x,
+            clientY: currentCenter.y,
+          });
+
+          // 双指位移联动平移
+          const deltaX = currentCenter.x - initialTouchCenter.x;
+          const deltaY = currentCenter.y - initialTouchCenter.y;
+          state.panX = Math.round(initialPanOnTouch.x + deltaX);
+          state.panY = Math.round(initialPanOnTouch.y + deltaY);
+          applyCanvasTransform();
+        }
+      }
+    },
+    { passive: false }
+  );
+
+  const handleTouchEnd = (event) => {
+    if (isPinching && event.touches.length < 2) {
+      isPinching = false;
+      initialTouchDistance = 0;
+      saveDraft(true);
+    }
+  };
+
+  canvasEl.addEventListener("touchend", handleTouchEnd, { passive: true });
+  canvasEl.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+
+  // Safari / WebKit 浏览器手势与多点触控增强
+  let safariGestureStartZoom = 1.0;
+  canvasEl.addEventListener("gesturestart", (event) => {
+    event.preventDefault();
+    safariGestureStartZoom = state.zoom || 1.0;
+  });
+  canvasEl.addEventListener("gesturechange", (event) => {
+    event.preventDefault();
+    setCanvasZoom(safariGestureStartZoom * event.scale, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+  });
+  canvasEl.addEventListener("gestureend", (event) => {
+    event.preventDefault();
+    saveDraft(true);
+  });
+
+  // 禁用非 Canvas 区域的触控板捏合与 Ctrl/Cmd+滚轮浏览器全页面缩放
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      if ((event.ctrlKey || event.metaKey) && !event.target.closest("#canvas")) {
+        event.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
+  // 禁用非 Canvas 区域的 Safari / WebKit 浏览器默认手势缩放
+  ["gesturestart", "gesturechange", "gestureend"].forEach((evtName) => {
+    window.addEventListener(
+      evtName,
+      (event) => {
+        if (!event.target.closest("#canvas")) {
+          event.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+  });
+
   document.addEventListener("keydown", (event) => {
+    // 拦截 Ctrl/Cmd + (+, -, =, 0) 浏览器整页缩放快捷键，转为作用于画布缩放
+    if (event.ctrlKey || event.metaKey) {
+      if (event.key === "+" || event.key === "=" || event.code === "NumpadAdd" || event.code === "Equal") {
+        event.preventDefault();
+        setCanvasZoom((state.zoom || 1.0) + 0.1);
+        return;
+      }
+      if (event.key === "-" || event.key === "_" || event.code === "NumpadSubtract" || event.code === "Minus") {
+        event.preventDefault();
+        setCanvasZoom((state.zoom || 1.0) - 0.1);
+        return;
+      }
+      if (event.key === "0" || event.code === "Numpad0" || event.code === "Digit0") {
+        event.preventDefault();
+        setCanvasZoom(1.0);
+        return;
+      }
+    }
+
     if (event.key === "Escape") {
       if (state.linking) {
         state.linking = null;
@@ -570,7 +708,14 @@ export function initializeCanvasInteractions(renderCallback) {
       if (state.selectedEdgeId) {
         state.selectedEdgeId = null;
         drawEdges();
-        saveDraft();
+        if (renderCallback) renderCallback();
+        else saveDraft();
+      }
+      if (state.selectedNodeId || state.errorNodeIds.size > 0) {
+        state.selectedNodeId = null;
+        state.errorNodeIds.clear();
+        if (renderCallback) renderCallback();
+        else saveDraft();
       }
       return;
     }
@@ -587,7 +732,8 @@ export function initializeCanvasInteractions(renderCallback) {
       state.workflow.edges = state.workflow.edges.filter((e) => e.id !== edgeId);
       state.selectedEdgeId = null;
       drawEdges();
-      saveDraft(true);
+      if (renderCallback) renderCallback();
+      else saveDraft(true);
       return;
     }
 

@@ -65,3 +65,18 @@ fun createWorkflowRuntime(
         )
     return WorkflowRuntime(registry, validator, codec, editorManifestCodec, engine, config)
 }
+
+/**
+ * 默认 Manifest 导出器，用于导出包含所有内置节点的编辑器元数据清单。
+ */
+object DefaultManifestExporter {
+    fun generateManifestJson(json: Json = defaultJson): String {
+        val runtime = createWorkflowRuntime(
+            config = WorkflowRuntimeConfig(
+                httpRequestExecutor = ActionHttpRequestExecutor { _ -> error("Manifest generation only") },
+                json = json,
+            ),
+        )
+        return runtime.editorManifestCodec.export()
+    }
+}

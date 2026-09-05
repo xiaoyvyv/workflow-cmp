@@ -27,3 +27,16 @@ kotlin {
         }
     }
 }
+
+tasks.register<JavaExec>("exportManifest") {
+    group = "workflow"
+    description = "Exports default ActionEditorManifest JSON to workflow-editor-web/manifest.json"
+    val jvmTarget = kotlin.targets.getByName("jvm") as org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+    val compilation = jvmTarget.compilations.getByName("main")
+    mainClass.set("com.xiaoyv.workflow.node.all.ManifestExportKt")
+    classpath(compilation.output.allOutputs, compilation.runtimeDependencyFiles)
+
+    val outputFile = layout.settingsDirectory.file("workflow-editor-web/manifest.json")
+    outputs.file(outputFile)
+    args(outputFile.asFile.absolutePath)
+}

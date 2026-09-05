@@ -1,7 +1,8 @@
 import { EditorConfig } from "../config.js";
 import { state, nodeById, specForNode } from "../state.js";
-import { $, escapeHtml } from "../utils.js";
+import { $, escapeHtml, generateUUID } from "../utils.js";
 import { canConnect } from "../canvas/edges.js";
+import { showToast } from "../ui/toast.js";
 
 export function compatibleInputPort(spec, source) {
   if (!source) return spec.inputPorts?.[0];
@@ -44,6 +45,9 @@ export function categoryLabel(category, specsInGroup) {
   if (meta?.title) return meta.title;
   if (meta?.name) return meta.name;
 
+  if (normCat === "loop") return "循环控制";
+  if (normCat === "flow") return "通用流程";
+
   if (category && category !== "other") {
     return category;
   }
@@ -51,7 +55,10 @@ export function categoryLabel(category, specsInGroup) {
   if (specsInGroup && specsInGroup.length > 0) {
     const firstType = specsInGroup[0].type || "";
     if (firstType.includes(".")) {
-      return firstType.split(".")[0];
+      const p = firstType.split(".")[0];
+      if (p === "loop") return "循环控制";
+      if (p === "flow") return "通用流程";
+      return p;
     }
   }
 
@@ -135,6 +142,17 @@ export function renderPalette() {
   const paletteEl = $("palette");
   const searchInput = $("search");
   if (!paletteEl) return;
+
+  if (!state.manifest?.nodeTypes || state.manifest.nodeTypes.length === 0) {
+    if (hintEl) hintEl.innerHTML = "";
+    paletteEl.innerHTML = `
+      <div class="empty-palette-hint">
+        <p style="margin-bottom: 8px;">尚未获取到节点定义</p>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5;">请点击上方“连接设备”或“导入 Manifest”加载可用节点。</p>
+      </div>
+    `;
+    return;
+  }
 
   const query = searchInput ? searchInput.value.trim() : "";
   const isSearching = Boolean(query);
@@ -305,7 +323,7 @@ export function nextNodePosition(sourceNode = null) {
 }
 
 export function createNode(spec, layout = null) {
-  const id = crypto.randomUUID();
+  const id = generateUUID();
   const position = layout ?? nextNodePosition();
   const fieldDefaults = Object.fromEntries(
     spec.editor.fields
@@ -326,6 +344,9 @@ export function createNode(spec, layout = null) {
     },
     layout: { ...position },
   });
+  if (spec.type === "flow.start" && !state.workflow.entryNodeId) {
+    state.workflow.entryNodeId = id;
+  }
   state.selectedNodeId = id;
   return nodeById(id);
 }
@@ -333,6 +354,22 @@ export function createNode(spec, layout = null) {
 export function addNodeFromPalette(type, renderCallback) {
   const spec = state.manifest.nodeTypes.find((item) => item.type === type);
   if (!spec) return;
+
+  // 入口节点仅支持一个，已存在时聚焦并提示，无需重复创建
+  if (spec.type === "flow.start") {
+    const existingStart = state.workflow.nodes?.find(
+      (n) => n.type === "flow.start" || n.id === state.workflow.entryNodeId,
+    );
+    if (existingStart) {
+      showToast("工作流仅支持一个入口节点", "warning");
+      state.selectedNodeId = existingStart.id;
+      if (renderCallback) renderCallback();
+      const el = document.getElementById(`node-${existingStart.id}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      return;
+    }
+  }
+
   const sourceNode = state.pendingLink ? nodeById(state.pendingLink.nodeId) : null;
   const position = nextNodePosition(sourceNode);
   const node = createNode(spec, position);
@@ -343,7 +380,7 @@ export function addNodeFromPalette(type, renderCallback) {
       canConnect(state.pendingLink, { nodeId: node.id, portId: input.id })
     ) {
       state.workflow.edges.push({
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         source: state.pendingLink,
         target: { nodeId: node.id, portId: input.id },
         kind: input.kind,

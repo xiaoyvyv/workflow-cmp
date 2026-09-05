@@ -15,7 +15,9 @@ data class ActionOpenExternalUrlEffect(
      * 要在外部浏览器中打开的绝对网页地址。
      */
     val url: String,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "打开外部网页 $url"
+}
 
 /**
  * 请求宿主通过 URI 跳转外部应用的副作用。
@@ -33,7 +35,9 @@ data class ActionOpenExternalAppEffect(
      * 目标应用不可用时可选的网页降级地址。
      */
     val fallbackUrl: String? = null,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "唤起应用 $uri"
+}
 
 /**
  * 请求宿主在应用内网页容器打开地址的副作用。
@@ -47,4 +51,6 @@ data class ActionOpenInternalWebEffect(
      */
     val url: String,
     val headers: SerializeMap<String, String>,
-) : ActionSideEffect
+) : ActionSideEffect {
+    override fun describe(): String = "打开内置网页 $url"
+}
