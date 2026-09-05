@@ -95,6 +95,16 @@ export function groupedPaletteSpecs() {
     specs.push(spec);
     groups.set(category, specs);
   });
+
+  const categoryIndexMap = new Map();
+  if (Array.isArray(state.manifest?.categories)) {
+    state.manifest.categories.forEach((cat, index) => {
+      if (cat?.id) {
+        categoryIndexMap.set(cat.id.toLowerCase(), index);
+      }
+    });
+  }
+
   return [...groups.entries()]
     .map(([category, specs]) => ({
       category,
@@ -110,6 +120,13 @@ export function groupedPaletteSpecs() {
     .sort((left, right) => {
       if (left.category === "flow_start_end") return -1;
       if (right.category === "flow_start_end") return 1;
+      const orderA = categoryIndexMap.has(left.category?.toLowerCase())
+        ? categoryIndexMap.get(left.category.toLowerCase())
+        : 9999;
+      const orderB = categoryIndexMap.has(right.category?.toLowerCase())
+        ? categoryIndexMap.get(right.category.toLowerCase())
+        : 9999;
+      if (orderA !== orderB) return orderA - orderB;
       return left.label.localeCompare(right.label, "zh-CN");
     });
 }

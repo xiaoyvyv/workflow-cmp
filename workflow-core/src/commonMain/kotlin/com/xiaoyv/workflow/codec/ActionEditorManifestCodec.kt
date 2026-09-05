@@ -120,7 +120,11 @@ fun ActionNodeRegistry.toEditorManifest(): ActionEditorManifest =
             all()
                 .asSequence()
                 .map { it.spec }
-                .sortedBy { it.type }
+                .sortedWith(
+                    compareBy<ActionNodeSpec> { com.xiaoyv.workflow.node.core.ActionNodeCategory.orderOf(it.category) }
+                        .thenBy { it.category }
+                        .thenBy { it.type }
+                )
                 .map(ActionNodeSpec::toEditorManifest)
                 .toList(),
         categories =
@@ -128,7 +132,12 @@ fun ActionNodeRegistry.toEditorManifest(): ActionEditorManifest =
                 .asSequence()
                 .map { it.spec }
                 .groupBy { it.category }
-                .toSortedMap()
+                .entries
+                .sortedWith(
+                    compareBy<Map.Entry<String, List<ActionNodeSpec>>> {
+                        com.xiaoyv.workflow.node.core.ActionNodeCategory.orderOf(it.key)
+                    }.thenBy { it.key }
+                )
                 .map { (category, specs) ->
                     val catSpec = com.xiaoyv.workflow.node.core.ActionNodeCategory.specOf(category)
                     ActionEditorCategoryManifest(
