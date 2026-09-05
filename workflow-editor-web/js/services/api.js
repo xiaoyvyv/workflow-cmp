@@ -2,11 +2,42 @@ import { EditorConfig } from "../config.js";
 import { state, getNodeTitle, ensureWorkflowCapabilities } from "../state.js";
 import { $, cleanJsonText } from "../utils.js";
 import { showToast } from "../ui/toast.js";
-import { showModalDialog, showImportWorkflowDialog } from "../ui/modal.js";
+import {
+  showModalDialog,
+  showImportWorkflowDialog,
+  showDeviceConnectGuideModal,
+} from "../ui/modal.js";
 import { showEvent, appendLog, openConsole, clearAllConsoleLogs } from "../console/console.js";
 import { inspectorIsValid } from "../inspector/inspector.js";
 import { executeAutoLayout } from "../canvas/layout.js";
 import { zoomFit } from "../canvas/interaction.js";
+
+export function isLocalOrLanHost(hostname) {
+  if (!hostname) return false;
+  const host = hostname.toLowerCase();
+  if (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "::1" ||
+    host === "[::1]" ||
+    host === "0.0.0.0"
+  ) {
+    return true;
+  }
+  if (host.endsWith(".local")) {
+    return true;
+  }
+  const ipv4Match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const a = Number(ipv4Match[1]);
+    const b = Number(ipv4Match[2]);
+    if (a === 10) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 127) return true;
+  }
+  return false;
+}
 
 export function baseUrl() {
   let configured = $("device")?.value?.trim()?.replace(/\/+$/, "") || "";
@@ -14,15 +45,20 @@ export function baseUrl() {
     configured = `http://${configured}`;
   }
   if (configured) return configured;
-  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
-    return window.location.origin;
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    if (isLocalOrLanHost(hostname) && window.location.protocol.startsWith("http")) {
+      return window.location.origin;
+    }
   }
-  return EditorConfig.defaultDeviceUrl;
+  return "";
 }
 
 export function updateConnectionUI(status, deviceName = "") {
   const dotEl = $("device-status-dot");
   const connectBtn = $("connect");
+  const deviceActions = $("device-actions");
+  const deviceSeparator = $("device-actions-separator");
 
   if (dotEl) {
     dotEl.className = `device-status-dot status-${status}`;
@@ -49,15 +85,30 @@ export function updateConnectionUI(status, deviceName = "") {
       connectBtn.title = "连接设备";
     }
   }
+
+  const isConnected = status === "connected";
+  const deviceHint = $("device-hint");
+  if (deviceActions) {
+    deviceActions.style.display = isConnected ? "flex" : "none";
+  }
+  if (deviceHint) {
+    deviceHint.style.display = isConnected ? "none" : "inline-flex";
+  }
+  if (deviceSeparator) {
+    deviceSeparator.style.display = isConnected ? "inline-block" : "none";
+  }
 }
 
 export function initializeDeviceAddress() {
   const deviceEl = $("device");
   if (deviceEl) {
-    if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
-      deviceEl.value = window.location.origin;
-    } else if (!deviceEl.value.trim()) {
-      deviceEl.value = EditorConfig.defaultDeviceUrl;
+    if (typeof window !== "undefined" && window.location) {
+      const hostname = window.location.hostname;
+      if (isLocalOrLanHost(hostname) && window.location.protocol.startsWith("http")) {
+        deviceEl.value = window.location.origin;
+      } else {
+        deviceEl.value = "";
+      }
     }
   }
 }
@@ -377,6 +428,10 @@ export function initializeToolbarActions(renderCallback) {
       e.preventDefault();
       performConnect(renderCallback, false);
     }
+  });
+
+  $("device-hint")?.addEventListener("click", () => {
+    showDeviceConnectGuideModal();
   });
 
   $("load")?.addEventListener("click", async () => {

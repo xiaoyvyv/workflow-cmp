@@ -149,7 +149,7 @@ textarea:disabled {
 
 .device-input {
   padding-left: 26px !important;
-  min-width: 210px;
+  min-width: 240px;
 }
 
 .token-input {
@@ -174,11 +174,90 @@ textarea:disabled {
   gap: 6px;
 }
 
+.toolbar-device-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px dashed rgba(71, 85, 105, 0.45);
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-device-hint:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.toolbar-device-hint:active {
+  transform: translateY(0);
+}
+
+.toolbar-device-hint b {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.toolbar-device-hint .device-hint-icon {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.toolbar-device-hint .device-hint-badge {
+  font-size: 11px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 2px;
+}
+
 .toolbar-right {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.btn-github-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  margin-left: 4px;
+}
+
+.btn-github-icon:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-github-icon:active {
+  transform: translateY(0);
+}
+
+.btn-github-icon .github-svg {
+  display: block;
 }
 
 .toolbar-layout-group {
@@ -2177,6 +2256,102 @@ aside {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Device Connect Guide Modal */
+.guide-modal-card {
+  max-width: 620px;
+  width: 92%;
+}
+
+.guide-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 68vh;
+  overflow-y: auto;
+  padding: 16px 20px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.guide-section {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #26354b;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.guide-section-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.guide-feature-item {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(71, 85, 105, 0.35);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.guide-feature-item strong {
+  color: #60a5fa;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12.5px;
+}
+
+.guide-feature-item span {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.guide-code-block {
+  background: #0b1120;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  color: #38bdf8;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 6px 0;
+  line-height: 1.45;
+}
+
+.guide-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.guide-link-btn:hover {
+  background: rgba(37, 99, 235, 0.3);
+  color: #93c5fd;
+  border-color: #60a5fa;
 }
 
 /* ==========================================================================

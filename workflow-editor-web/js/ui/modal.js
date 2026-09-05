@@ -149,3 +149,97 @@ export function showImportWorkflowDialog({ onImportFile, onImportText }) {
   });
 }
 
+export function showDeviceConnectGuideModal() {
+  return new Promise((resolve) => {
+    const container = $("modal-container");
+    if (!container) {
+      resolve(false);
+      return;
+    }
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+
+    backdrop.innerHTML = `
+      <div class="modal-card guide-modal-card">
+        <div class="modal-header">
+          <span class="modal-icon">📱</span>
+          <h4>设备连接与接入指南</h4>
+        </div>
+        <div class="modal-body guide-modal-body">
+          <div class="guide-section">
+            <h5 class="guide-section-title">🌟 连接设备后可解锁的操作</h5>
+            <div class="guide-feature-list">
+              <div class="guide-feature-item">
+                <strong>📥 读取工作流</strong>
+                <span>直接拉取手机/桌面设备上已存储的工作流及版本号</span>
+              </div>
+              <div class="guide-feature-item">
+                <strong>💾 保存工作流</strong>
+                <span>向设备端原子保存最新配置，带并发版本冲突检测</span>
+              </div>
+              <div class="guide-feature-item">
+                <strong>🛡️ 设备端校验</strong>
+                <span>使用宿主环境真实 Kotlin 引擎进行结构和约束校验</span>
+              </div>
+              <div class="guide-feature-item">
+                <strong>▶️ 远程调试运行</strong>
+                <span>一键触发设备执行工作流，控制台实时接收执行日志与事件</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="guide-section">
+            <h5 class="guide-section-title">🚀 如何在应用中启动 Bridge 服务</h5>
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #94a3b8;">
+              在 Kotlin Multiplatform / Android / Compose Desktop 项目中引入 <code>workflow-editor-bridge</code> 模块：
+            </p>
+            <div class="guide-code-block">// build.gradle.kts (commonMain)
+implementation("com.xiaoyv.workflow:workflow-editor-bridge:&lt;version&gt;")</div>
+            <p style="margin: 8px 0 6px 0; font-size: 12px; color: #94a3b8;">
+              在应用初始化或调试菜单中启动嵌入式服务：
+            </p>
+            <div class="guide-code-block">val server = startEditorBridge(
+    host = "0.0.0.0", // 允许局域网访问
+    port = 8080,
+    service = EditorWorkflowService(repository = ...),
+    runController = EditorEngineRunController(runtime = ...)
+)</div>
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">
+              启动后，在顶部输入设备 IP（如 <code>http://192.168.1.100:8080</code>），点击「连接」即可开启双向实时调试！
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <a href="https://github.com/xiaoyvyv/workflow-cmp" target="_blank" rel="noopener noreferrer" class="guide-link-btn">
+            <span>⭐️</span> GitHub 仓库 (xiaoyvyv/workflow-cmp)
+          </a>
+          <button type="button" class="modal-btn modal-btn-confirm" id="guide-close-btn">我知道了</button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(backdrop);
+
+    const cleanup = () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      backdrop.remove();
+      resolve(true);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" || e.key === "Enter") {
+        e.preventDefault();
+        cleanup();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    backdrop.querySelector("#guide-close-btn")?.addEventListener("click", () => {
+      cleanup();
+    });
+
+    backdrop.querySelector("#guide-close-btn")?.focus();
+  });
+}

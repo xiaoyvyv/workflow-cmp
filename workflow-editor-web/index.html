@@ -19,13 +19,19 @@
     <input id="token" class="token-input" placeholder="Token (可选)" type="password"/>
     <button id="connect" type="button" class="btn-connect">连接</button>
 
-    <span class="toolbar-separator"></span>
+    <span id="device-actions-separator" class="toolbar-separator" style="display: none;"></span>
 
-    <div class="toolbar-action-group">
+    <div id="device-actions" class="toolbar-action-group" style="display: none;">
         <button id="load" type="button">读取</button>
         <button id="save" type="button" class="btn-save">保存</button>
         <button id="validate" type="button">校验</button>
         <button id="run" type="button" class="btn-run">运行</button>
+    </div>
+
+    <div id="device-hint" class="toolbar-device-hint" title="点击查看设备端 Bridge 服务接入与配置教程">
+        <span class="device-hint-icon">💡</span>
+        <span class="device-hint-text">连接设备后可进行<b>读取</b>、<b>保存</b>、<b>校验</b>与<b>远程运行</b></span>
+        <span class="device-hint-badge">接入指南 ↗</span>
     </div>
 
     <div class="toolbar-right">
@@ -33,6 +39,12 @@
         <button id="workflow" type="button">导入工作流</button>
         <button id="export" type="button">导出工作流</button>
         <input hidden id="file" type="file"/>
+        <a id="btn-github" class="btn-github-icon" href="https://github.com/xiaoyvyv/workflow-cmp" target="_blank" rel="noopener noreferrer"
+           title="GitHub 开源仓库 (xiaoyvyv/workflow-cmp)">
+            <svg class="github-svg" viewBox="0 0 24 24" width="21" height="21" fill="currentColor" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+        </a>
     </div>
 </header>
 <main id="editor-layout">
