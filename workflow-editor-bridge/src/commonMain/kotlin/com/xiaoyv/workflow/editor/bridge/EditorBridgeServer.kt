@@ -76,6 +76,11 @@ class EditorBridgeServer(
             allowHeader(HttpHeaders.ContentType)
             allowMethod(HttpMethod.Put)
         }
+        intercept(ApplicationCallPipeline.Plugins) {
+            call.response.headers.append(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
+            call.response.headers.append(HttpHeaders.Pragma, "no-cache")
+            call.response.headers.append(HttpHeaders.Expires, "0")
+        }
         if (accessToken != null)
             intercept(ApplicationCallPipeline.Plugins) {
                 // 浏览器 WebSocket 无法附加 Authorization；仅允许在升级请求的

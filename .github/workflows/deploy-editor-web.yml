@@ -42,6 +42,13 @@ jobs:
           chmod +x gradlew
           ./gradlew :workflow-node-all:exportManifest --no-daemon
 
+      - name: Inject Cache-Busting Version
+        run: |
+          VERSION="${{ github.sha }}"
+          sed -i "s|\./style.css|\./style.css?v=${VERSION}|g" ./workflow-editor-web/index.html
+          sed -i "s|\./app.js|\./app.js?v=${VERSION}|g" ./workflow-editor-web/index.html
+          sed -i "s|\./js/main.js|\./js/main.js?v=${VERSION}|g" ./workflow-editor-web/app.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
