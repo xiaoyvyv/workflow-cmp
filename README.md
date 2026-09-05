@@ -37,6 +37,8 @@
   <img src="https://img.shields.io/badge/Concurrency-Coroutines_%26_Flow-F59E0B?style=flat-square" alt="Coroutines and Flow" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Build & Tests" />
 </p>
+
+
 ---
 
 ### 🌟 核心特性与应用场景
@@ -80,7 +82,9 @@
   </tr>
 </table>
 
-> 🎨 **可视化编排工具与在线体验**：提供纯前端 Web DAG 画布与全平台 Bridge 服务，支持免安装在线体验 [GitHub Pages 在线演示](https://xiaoyvyv.github.io/workflow-cmp/)，并提供标准 MCP 协议供
+🎨 **可视化编排工具与在线体验**：提供纯前端 Web DAG 画布与全平台 Bridge 服务
+
+> 支持免安装在线体验 [GitHub Pages 在线演示](https://xiaoyvyv.github.io/workflow-cmp/)，并提供标准 MCP 协议供
 > AI 助手（Cursor / Claude）自动生成与校验工作流。详见 [5. 可视化编排与 AI 桥接](#5-可视化编排与-ai-桥接-editor--mcp) 及 [docs/EditorServer.md](docs/EditorServer.md)。
 
 ---
