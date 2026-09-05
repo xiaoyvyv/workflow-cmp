@@ -25,7 +25,7 @@ export function render() {
 export async function loadDefaultManifest() {
   if (state.manifest?.nodeTypes?.length > 0) return;
   try {
-    const res = await fetch("./manifest.json");
+    const res = await fetch(`./manifest.json?_t=${Date.now()}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       const manifest = data.manifest ?? data;

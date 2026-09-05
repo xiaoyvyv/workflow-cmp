@@ -2158,6 +2158,7 @@ aside {
 }
 
 .import-modal-body {
+  white-space: normal !important;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2260,27 +2261,38 @@ aside {
 
 /* Device Connect Guide Modal */
 .guide-modal-card {
-  max-width: 620px;
+  max-width: 640px;
   width: 92%;
 }
 
 .guide-modal-body {
+  white-space: normal !important;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  max-height: 68vh;
+  gap: 12px;
+  max-height: 70vh;
   overflow-y: auto;
   padding: 16px 20px;
   color: #cbd5e1;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.55;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .guide-section {
+  text-align: left;
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid #26354b;
   border-radius: 8px;
   padding: 12px 14px;
+}
+
+.guide-section p {
+  text-align: left;
+  margin: 0;
+  line-height: 1.5;
 }
 
 .guide-section-title {
@@ -2291,16 +2303,24 @@ aside {
   display: flex;
   align-items: center;
   gap: 6px;
+  text-align: left;
 }
 
 .guide-feature-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-top: 6px;
 }
 
+@media (max-width: 600px) {
+  .guide-feature-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 .guide-feature-item {
+  text-align: left;
   background: rgba(30, 41, 59, 0.55);
   border: 1px solid rgba(71, 85, 105, 0.35);
   border-radius: 6px;
@@ -2312,18 +2332,23 @@ aside {
   display: block;
   margin-bottom: 2px;
   font-size: 12.5px;
+  text-align: left;
 }
 
 .guide-feature-item span {
   font-size: 11.5px;
   color: #94a3b8;
+  display: block;
+  text-align: left;
+  line-height: 1.4;
 }
 
 .guide-code-block {
+  text-align: left;
   background: #0b1120;
   border: 1px solid #1e293b;
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11.5px;
   color: #38bdf8;
