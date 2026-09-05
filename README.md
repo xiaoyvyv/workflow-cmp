@@ -14,12 +14,12 @@
 </p>
 
 <p align="center">
-  <a href="#-可视化工作流编辑器-workflow-editor-web">可视化编辑器</a> •
   <a href="#1-项目架构与模块划分">项目架构</a> •
   <a href="#2-执行模型与调度内核">调度内核</a> •
   <a href="#3-模板与表达式引擎">表达式引擎</a> •
   <a href="#4-内置节点参考">节点字典</a> •
-  <a href="#6-快速接入与示例">快速接入</a>
+  <a href="#5-可视化编排与-ai-桥接-editor--mcp">可视化编排</a> •
+  <a href="#7-快速接入与示例">快速接入</a>
 </p>
 
 <p align="center">
@@ -37,27 +37,6 @@
   <img src="https://img.shields.io/badge/Concurrency-Coroutines_%26_Flow-F59E0B?style=flat-square" alt="Coroutines and Flow" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Build & Tests" />
 </p>
-
----
-
-## 🎨 可视化工作流编辑器 (Workflow Editor Web)
-
-> 🚀 **在线直接体验**：[https://xiaoyvyv.github.io/workflow-cmp/](https://xiaoyvyv.github.io/workflow-cmp/)
->
-> 📖 **服务端与 AI 桥接文档**：详见 [docs/EditorServer.md](docs/EditorServer.md)。
-
-`workflow-cmp` 提供了开箱即用的现代化 Web 可视化 DAG 编排编辑器与全平台设备桥接通信套件（`:workflow-editor-bridge` / `:workflow-editor-mcp`），支持纯浏览器前端免安装直接使用，亦可直接连接真机/桌面端无缝调试与执行。
-
-### ✨ 编辑器主要特性
-
-- **🖱️ 流畅拖拽与无限画布**：左侧节点库直接拖入画布，支持画布自由缩放、平移定位与框选。
-- **📐 智能端口与连线校验**：严格校验控制流与数据流连接规则，防止循环死锁、类型不匹配或悬空端口。
-- **🌲 自动层次排版 (Sugiyama Layout)**：一键对复杂 DAG 图进行整洁的分层自动排版，节点关系清晰直观。
-- **🎯 精准错误高亮溯源**：工作流执行异常时自动弹出控制台，并在画布中精准单次高亮对应报错节点，点击空白即可恢复，排错一目了然。
-- **⚡ 实时设备双向同步**：通过 WebSocket 与 Android / Desktop / iOS 宿主应用实时同步，支持下发运行、单步监控、副作用交互处理与取消操作。
-- **🤖 MCP (Model Context Protocol) 赋能**：内置标准 MCP 协议服务，支持 Claude、Cursor 等 AI 助手直接理解节点 Spec、自动生成工作流并调用执行。
-- **🔒 乐观锁版本并发保护**：多端编辑协同内置 Revision 修订号机制，保存时遇冲突自动提示是否覆盖或合并。
-
 ---
 
 ### 🌟 核心特性与应用场景
@@ -101,23 +80,25 @@
   </tr>
 </table>
 
+> 🎨 **可视化编排工具与在线体验**：提供纯前端 Web DAG 画布与全平台 Bridge 服务，支持免安装在线体验 [GitHub Pages 在线演示](https://xiaoyvyv.github.io/workflow-cmp/)，并提供标准 MCP 协议供
+> AI 助手（Cursor / Claude）自动生成与校验工作流。详见 [5. 可视化编排与 AI 桥接](#5-可视化编排与-ai-桥接-editor--mcp) 及 [docs/EditorServer.md](docs/EditorServer.md)。
+
 ---
 
 ## 目录
 
-1. [可视化工作流编辑器 (Workflow Editor Web)](#-可视化工作流编辑器-workflow-editor-web)
-2. [项目架构与模块划分](#1-项目架构与模块划分)
+1. [项目架构与模块划分](#1-项目架构与模块划分)
     1. [模块结构](#11-模块结构)
     2. [核心设计要点](#12-核心设计要点)
-3. [执行模型与调度内核](#2-执行模型与调度内核)
+2. [执行模型与调度内核](#2-执行模型与调度内核)
     1. [调度机制与生命周期](#21-调度机制与生命周期)
     2. [分支与合流 (Fork & Join)](#22-分支与合流-fork--join)
     3. [平台副作用与挂起交互 (SideEffect)](#23-平台副作用与挂起交互-sideeffect)
-4. [模板与表达式引擎](#3-模板与表达式引擎)
+3. [模板与表达式引擎](#3-模板与表达式引擎)
     1. [命名空间访问](#31-命名空间访问)
     2. [运算符优先级与语法规则](#32-运算符优先级与语法规则)
     3. [类型转换与真值判定](#33-类型转换与真值判定)
-5. [内置节点参考](#4-内置节点参考)
+4. [内置节点参考](#4-内置节点参考)
     1. [流程控制与分支 (`flow.*`)](#41-流程控制与分支-flow)
     2. [逻辑判断 (`control.*`)](#42-逻辑判断-control)
     3. [循环控制与迭代 (`loop.*`)](#43-循环控制与迭代-loop)
@@ -136,13 +117,14 @@
     16. [文件系统沙箱 (`file.*`)](#416-文件系统沙箱-file)
     17. [客户端动作与 UI 交互 (`action.*`, `ui.*`, `system.*`)](#417-客户端动作与-ui-交互-action-ui-system)
     18. [业务扩展节点 (`bilibili.*`)](#418-业务扩展节点-bilibili)
-6. [错误处理与调试](#5-错误处理与调试)
-7. [快速接入与示例](#6-快速接入与示例)
-    1. [创建运行时 (`WorkflowRuntimeFactory`)](#61-创建运行时-workflowruntimefactory)
-    2. [执行工作流与事件监听](#62-执行工作流与事件监听)
-    3. [Compose UI 交互宿主挂载](#63-compose-ui-交互宿主挂载)
-    4. [自定义节点扩展](#64-自定义节点扩展)
-    5. [构建与测试命令](#65-构建与测试命令)
+5. [可视化编排与 AI 桥接 (Editor & MCP)](#5-可视化编排与-ai-桥接-editor--mcp)
+6. [错误处理与调试](#6-错误处理与调试)
+7. [快速接入与示例](#7-快速接入与示例)
+   1. [创建运行时 (`WorkflowRuntimeFactory`)](#71-创建运行时-workflowruntimefactory)
+   2. [执行工作流与事件监听](#72-执行工作流与事件监听)
+   3. [Compose UI 交互宿主挂载](#73-compose-ui-交互宿主挂载)
+   4. [自定义节点扩展](#74-自定义节点扩展)
+   5. [构建与测试命令](#75-构建与测试命令)
 
 ---
 
@@ -651,7 +633,27 @@ HTML 解析节点基于 **Ksoup** 引擎构建，负责 DOM 树的解析、选�
 
 ---
 
-## 5. 错误处理与调试
+## 5. 可视化编排与 AI 桥接 (Editor & MCP)
+
+> 🚀 **在线直接体验**：[https://xiaoyvyv.github.io/workflow-cmp/](https://xiaoyvyv.github.io/workflow-cmp/)
+>
+> 📖 **服务端与 AI 协议接入文档**：详见 [docs/EditorServer.md](docs/EditorServer.md)。
+
+`workflow-cmp` 提供了开箱即用的现代化 Web 可视化 DAG 编排编辑器与全平台设备桥接通信套件（`:workflow-editor-bridge` / `:workflow-editor-mcp`），支持纯浏览器前端免安装直接使用，亦可直接连接真机/桌面端无缝调试与执行。
+
+### ✨ 编辑器主要特性
+
+- **🖱️ 流畅拖拽与无限画布**：左侧节点库直接拖入画布，支持画布自由缩放、平移定位与框选。
+- **📐 智能端口与连线校验**：严格校验控制流与数据流连接规则，防止循环死锁、类型不匹配或悬空端口。
+- **🌲 自动层次排版 (Sugiyama Layout)**：一键对复杂 DAG 图进行整洁的分层自动排版，节点关系清晰直观。
+- **🎯 精准错误高亮溯源**：工作流执行异常时自动弹出控制台，并在画布中精准单次高亮对应报错节点，点击空白即可恢复，排错一目了然。
+- **⚡ 实时设备双向同步**：通过 WebSocket 与 Android / Desktop / iOS 宿主应用实时同步，支持下发运行、单步监控、副作用交互处理与取消操作。
+- **🤖 MCP (Model Context Protocol) 赋能**：内置标准 MCP 协议服务，支持 Claude、Cursor 等 AI 助手直接理解节点 Spec、自动生成工作流并调用执行。
+- **🔒 乐观锁版本并发保护**：多端编辑协同内置 Revision 修订号机制，保存时遇冲突自动提示是否覆盖或合并。
+
+---
+
+## 6. 错误处理与调试
 
 工作流在静态校验未通过或运行期发生异常时，会抛出结构化的 `ActionWorkflowException`，携带具体的错误标识与排查建议：
 
@@ -682,9 +684,9 @@ ActionWorkflowTraceLogger.addListener { tag, priority, message ->
 
 ---
 
-## 6. 快速接入与示例
+## 7. 快速接入与示例
 
-### 6.1 创建运行时 (`WorkflowRuntimeFactory`)
+### 7.1 创建运行时 (`WorkflowRuntimeFactory`)
 
 通过工厂函数直接创建工作流运行时环境（包含调度引擎、节点注册表与校验器）：
 
@@ -709,7 +711,7 @@ val engine = runtime.engine
 val registry = runtime.registry
 ```
 
-### 6.2 执行调用与事件流消费
+### 7.2 执行调用与事件流消费
 
 外部业务层或 ViewModel 触发工作流执行，订阅生命周期 Flow：
 
@@ -747,7 +749,7 @@ val executionJob = scope.launch {
 }
 ```
 
-### 6.3 Compose UI 交互宿主挂载
+### 7.3 Compose UI 交互宿主挂载
 
 在 Compose Multiplatform 界面中，配合 `:workflow-ui-core` 与 `:workflow-ui-all` 即可一站式挂载各类副作用弹窗与多媒体页面：
 
@@ -781,7 +783,7 @@ fun AppContent() {
 }
 ```
 
-### 6.4 自定义节点扩展
+### 7.4 自定义节点扩展
 
 通过实现 `ActionNodeDefinition` 与 `ActionNodeExecutor`，可快速声明与扩展业务私有节点：
 
@@ -789,7 +791,7 @@ fun AppContent() {
 2. **实现执行器 (`ActionNodeExecutor`)**：从 `ActionExecutionContext` 读取入参并执行逻辑，返回 `ActionNodeExecutionResult`。
 3. **注册节点**：在调用 `createWorkflowRuntime(config, nodeDefinitions = listOf(customNode))` 时追加注册即可。
 
-### 6.5 构建与测试命令
+### 7.5 构建与测试命令
 
 ```bash
 # 1. 编译 shared 模块公共代码元数据
@@ -804,3 +806,4 @@ fun AppContent() {
 # 4. 执行全工程单元测试
 ./gradlew testDebugUnitTest
 ```
+
