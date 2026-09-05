@@ -22,6 +22,7 @@ import com.xiaoyv.workflow.di.WorkflowRuntime
 import com.xiaoyv.workflow.di.WorkflowRuntimeConfig
 import com.xiaoyv.workflow.di.createWorkflowRuntime
 import com.xiaoyv.workflow.engine.ActionSideEffectDispatcher
+import com.xiaoyv.workflow.engine.ActionSideEffectHandler
 import com.xiaoyv.workflow.engine.ActionSideEffectResult
 import com.xiaoyv.workflow.engine.runtime.ActionWorkflowEngine
 import com.xiaoyv.workflow.model.definition.ActionWorkflow
@@ -164,6 +165,22 @@ class WorkflowsViewModel(
         _uiEffect.trySend(effect)
     }
 
+    val sideEffectHandler: ActionSideEffectHandler = { effect ->
+        val effectId = ActionSideEffectDispatcher.generateSideEffectId()
+        when (effect) {
+            is ActionShowToastEffect -> {
+                emitUiEffect(WorkflowsSideEffect.Toast(effect.message))
+                ActionSideEffectResult.Success()
+            }
+
+            else -> {
+                activeSideEffectDispatcher.awaitUiResult(effectId) {
+                    emitUiEffect(WorkflowsSideEffect.Action(effectId, effect))
+                }
+            }
+        }
+    }
+
     fun onIntent(intent: WorkflowsIntent) {
         when (intent) {
             is WorkflowsIntent.SelectCategory -> {
@@ -208,21 +225,7 @@ class WorkflowsViewModel(
                     environment = buildJsonObject { put("locale", JsonPrimitive("zh-CN")) },
                     trigger = buildJsonObject { put("source", JsonPrimitive("workflows_screen")) },
                 ),
-                sideEffectHandler = { effect ->
-                    val effectId = ActionSideEffectDispatcher.generateSideEffectId()
-                    when (effect) {
-                        is ActionShowToastEffect -> {
-                            emitUiEffect(WorkflowsSideEffect.Toast(effect.message))
-                            ActionSideEffectResult.Success()
-                        }
-
-                        else -> {
-                            activeSideEffectDispatcher.awaitUiResult(effectId) {
-                                emitUiEffect(WorkflowsSideEffect.Action(effectId, effect))
-                            }
-                        }
-                    }
-                },
+                sideEffectHandler = sideEffectHandler,
             ).collect { event ->
                 val output = event.toOutputLine()
                 debugLog {

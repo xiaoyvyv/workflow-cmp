@@ -16,6 +16,7 @@ import com.xiaoyv.workflow.node.builtin.tryPort
 import com.xiaoyv.workflow.node.core.ActionNodeCategory
 import com.xiaoyv.workflow.node.core.ActionNodeDefinition
 import com.xiaoyv.workflow.node.core.ActionNodeSpec
+import com.xiaoyv.workflow.node.core.ActionPortConnectionLimit
 import com.xiaoyv.workflow.node.core.string
 import com.xiaoyv.workflow.node.resolver.ActionTemplateResolver
 import com.xiaoyv.workflow.port.ActionWorkflowLogger
@@ -93,7 +94,10 @@ private fun endDefinition() = ActionNodeDefinition(
     spec = ActionNodeSpec(
         type = ActionNodeType.FLOW_END,
         category = ActionNodeCategory.FLOW,
-        inputPorts = persistentListOf(inPort),
+        inputPorts =
+            persistentListOf(
+                inPort.copy(maxConnections = ActionPortConnectionLimit.UNLIMITED),
+            ),
         editor = ControlNodeEditorCatalog.end,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "") },

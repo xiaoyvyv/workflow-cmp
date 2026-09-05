@@ -1,5 +1,7 @@
 package com.xiaoyv.workflow.codec
 
+import com.xiaoyv.workflow.model.spec.ActionCapability
+import com.xiaoyv.workflow.model.spec.ActionCapabilitySpec
 import com.xiaoyv.workflow.node.core.ActionNodeEditorSpec
 import com.xiaoyv.workflow.node.core.ActionNodeRegistry
 import com.xiaoyv.workflow.node.core.ActionNodeSpec
@@ -74,6 +76,7 @@ data class ActionEditorManifest(
         com.xiaoyv.workflow.model.definition.ActionWorkflow.CURRENT_FORMAT_VERSION,
     val nodeTypes: List<ActionEditorNodeManifest>,
     val categories: List<ActionEditorCategoryManifest>,
+    val capabilities: List<ActionCapabilitySpec> = emptyList(),
 )
 
 /**
@@ -104,6 +107,7 @@ data class ActionEditorNodeManifest(
 @Serializable
 data class ActionEditorCategoryManifest(
     val id: String,
+    val label: String = id,
     val nodeTypes: List<String>,
 )
 
@@ -126,8 +130,20 @@ fun ActionNodeRegistry.toEditorManifest(): ActionEditorManifest =
                 .groupBy { it.category }
                 .toSortedMap()
                 .map { (category, specs) ->
-                    ActionEditorCategoryManifest(category, specs.map { it.type }.sorted())
+                    val catSpec = com.xiaoyv.workflow.node.core.ActionNodeCategory.specOf(category)
+                    ActionEditorCategoryManifest(
+                        id = category,
+                        label = catSpec.label,
+                        nodeTypes = specs.map { it.type }.sorted(),
+                    )
                 },
+        capabilities = buildList {
+            val registeredCapabilityIds = all().flatMap { it.spec.requiredCapabilities }.toSet()
+            val allCapabilityIds = (ActionCapability.allSpecs.keys + registeredCapabilityIds).sorted()
+            allCapabilityIds.forEach { id ->
+                add(ActionCapability.specOf(id))
+            }
+        },
     )
 
 private fun ActionNodeSpec.toEditorManifest() =

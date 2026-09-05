@@ -24,7 +24,6 @@ internal object ControlNodeEditorCatalog {
             description = "工作流的唯一入口节点。",
             icon = "play",
             color = "#22C55E",
-            creatable = false,
         )
 
     val flowSwitch =

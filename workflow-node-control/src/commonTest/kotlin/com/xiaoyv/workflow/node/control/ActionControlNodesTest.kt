@@ -40,6 +40,61 @@ import kotlin.time.TimeSource
 class ActionControlNodesTest {
 
     @Test
+    fun flowEndAcceptsMultipleControlFlowExits() {
+        val workflow =
+            ActionWorkflow(
+                id = "test_multiple_end_inputs",
+                name = "Multiple end inputs",
+                entryNodeId = "start",
+                nodes =
+                    persistentListOf(
+                        ActionNode(id = "start", type = ActionNodeType.FLOW_START),
+                        ActionNode(
+                            id = "left",
+                            type = ActionNodeType.FLOW_DELAY,
+                            config = config(ActionFlowConfigKey.DELAY_MILLIS to JsonPrimitive(0)),
+                        ),
+                        ActionNode(
+                            id = "right",
+                            type = ActionNodeType.FLOW_DELAY,
+                            config = config(ActionFlowConfigKey.DELAY_MILLIS to JsonPrimitive(0)),
+                        ),
+                        ActionNode(id = "end", type = ActionNodeType.FLOW_END),
+                    ),
+                edges =
+                    persistentListOf(
+                        ActionEdge(
+                            id = "start_left",
+                            source = ActionPortRef("start", ActionControlPortId.NEXT),
+                            target = ActionPortRef("left", ActionControlPortId.IN),
+                        ),
+                        ActionEdge(
+                            id = "start_right",
+                            source = ActionPortRef("start", ActionControlPortId.NEXT),
+                            target = ActionPortRef("right", ActionControlPortId.IN),
+                        ),
+                        ActionEdge(
+                            id = "left_end",
+                            source = ActionPortRef("left", ActionControlPortId.NEXT),
+                            target = ActionPortRef("end", ActionControlPortId.IN),
+                        ),
+                        ActionEdge(
+                            id = "right_end",
+                            source = ActionPortRef("right", ActionControlPortId.NEXT),
+                            target = ActionPortRef("end", ActionControlPortId.IN),
+                        ),
+                    ),
+            )
+        val registry =
+            ActionNodeRegistry(
+                builtInActionNodeDefinitions(testHttpRequestExecutor, testPreferencesStore),
+            )
+        val validation = ActionWorkflowValidator(registry).validate(workflow)
+
+        assertTrue(validation.isValid, validation.issues.joinToString { it.message })
+    }
+
+    @Test
     fun testBranchingAndJoiningWorkflow() = runBlocking {
         // 构建分支与合流图:
         // entry (node_start) -> node_left AND node_right (Fan-Out)

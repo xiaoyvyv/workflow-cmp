@@ -9,7 +9,7 @@
 <body>
 <header class="toolbar">
     <strong>Workflow Editor</strong>
-    <input id="device" placeholder="设备地址，例如 http://127.0.0.1:8080"/>
+    <input id="device" placeholder="设备地址，例如 http://localhost:8080" value="http://localhost:8080"/>
     <input id="token" placeholder="可选设备 token" type="password"/>
     <button id="connect">连接设备</button>
     <button id="load">读取</button>
@@ -22,28 +22,121 @@
     <button id="export">导出工作流</button>
     <input hidden id="file" type="file"/>
 </header>
-<main>
-    <aside class="palette-panel">
-        <h3>节点</h3>
-        <p class="hint" id="palette-hint"></p>
-        <input id="search" placeholder="筛选节点"/>
+<main id="editor-layout">
+    <aside class="palette-panel" id="panel-palette">
+        <div class="palette-header" id="palette-header">
+            <h3>节点</h3>
+            <p class="hint" id="palette-hint"></p>
+            <div class="palette-search-wrapper">
+                <input id="search" placeholder="筛选节点 (名称/类型/描述)"/>
+                <button id="search-clear-btn" class="search-clear-btn" title="清空筛选">✕</button>
+            </div>
+        </div>
         <div id="palette"></div>
     </aside>
-    <section aria-label="工作流画布" id="canvas">
-        <svg id="edges"></svg>
-        <div id="nodes"></div>
-    </section>
-    <aside class="inspector-panel">
+
+    <div class="resizer resizer-col" id="resizer-left" title="拖拽调整左侧栏宽度"></div>
+
+    <div class="center-area" id="center-area">
+        <div class="canvas-wrapper" id="canvas-wrapper">
+            <section aria-label="工作流画布" id="canvas">
+                <div id="canvas-viewport">
+                    <svg id="edges"></svg>
+                    <div id="nodes"></div>
+                </div>
+            </section>
+            <div class="canvas-controls" id="canvas-controls">
+                <div class="canvas-control-group layout-control-group">
+                    <div class="layout-picker" id="canvas-layout-picker">
+                        <button
+                                id="canvas-layout-trigger"
+                                class="canvas-control-btn layout-picker-trigger"
+                                type="button"
+                                aria-expanded="false"
+                                aria-haspopup="menu"
+                                title="选择布局类型并立即格式化"
+                        >
+                            <span id="canvas-layout-label">水平布局</span>
+                            <span class="layout-picker-chevron" aria-hidden="true">⌄</span>
+                        </button>
+                        <div class="layout-picker-menu" id="canvas-layout-menu" role="menu" hidden>
+                            <button class="layout-picker-option" type="button" role="menuitemradio" data-layout-id="dag-lr">
+                                <span>水平布局</span>
+                                <small>从左到右</small>
+                            </button>
+                            <button class="layout-picker-option" type="button" role="menuitemradio" data-layout-id="dag-tb">
+                                <span>垂直布局</span>
+                                <small>从上到下</small>
+                            </button>
+                            <button class="layout-picker-option" type="button" role="menuitemradio" data-layout-id="dag-compact">
+                                <span>紧凑布局</span>
+                                <small>二维紧凑排布</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <span class="canvas-control-separator"></span>
+                <div class="canvas-control-group">
+                    <button id="zoom-out" class="canvas-control-btn zoom-btn" type="button" title="缩小 (Ctrl/Cmd + 滚轮向下)">−</button>
+                    <button id="zoom-reset" class="canvas-control-btn zoom-btn zoom-level-btn" type="button" title="重置缩放 (点击设为 100%)">100%</button>
+                    <button id="zoom-in" class="canvas-control-btn zoom-btn" type="button" title="放大 (Ctrl/Cmd + 滚轮向上)">+</button>
+                    <button id="zoom-fit" class="canvas-control-btn zoom-btn zoom-fit-btn" type="button" title="自适应画布大小 (适合所有节点)">⛶ 适应</button>
+                </div>
+                <span class="canvas-control-separator"></span>
+                <div class="canvas-control-group">
+                    <button id="canvas-clear" class="canvas-control-btn clear-btn" type="button" title="清空画布并重置为初始工作流">🗑️ 清空</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="resizer resizer-row" id="resizer-bottom" title="拖拽调整控制台高度"></div>
+
+        <section class="console-panel collapsed" id="console-panel">
+            <header class="console-header" id="console-header">
+                <div class="console-tabs">
+                    <button class="console-tab active" data-tab="events" id="tab-events">
+                        <span>⚡ 设备事件</span>
+                        <span class="tab-badge" id="event-count-badge">0</span>
+                    </button>
+                    <button class="console-tab" data-tab="logs" id="tab-logs">
+                        <span>📋 运行日志</span>
+                        <span class="tab-badge" id="log-count-badge">0</span>
+                    </button>
+                </div>
+                <div class="console-actions">
+                    <button id="console-copy-btn" class="console-action-btn" title="复制当前控制台内容">复制</button>
+                    <button id="console-clear-btn" class="console-action-btn" title="清空当前日志">清空</button>
+                    <button id="console-toggle-btn" class="console-action-btn" title="展开/收起控制台">
+                        <span id="console-toggle-text">▲ 展开控制台</span>
+                    </button>
+                </div>
+            </header>
+            <div class="console-content" id="console-content">
+                <div class="console-tab-pane active" id="pane-events">
+                    <pre id="events" class="console-output">尚未连接设备</pre>
+                </div>
+                <div class="console-tab-pane" id="pane-logs">
+                    <div id="logs" class="console-logs-list">
+                        <div class="log-line log-info"><span class="log-time">--:--:--</span> 等待连接或工作流执行...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="resizer resizer-col" id="resizer-right" title="拖拽调整右侧栏宽度"></div>
+
+    <aside class="inspector-panel" id="panel-inspector">
         <h3 id="title">配置</h3>
         <div id="inspector">选择一个节点</div>
-        <div class="node-actions">
-            <button id="set-entry">设为入口</button>
+        <div class="node-actions" id="node-actions" style="display: none;">
             <button id="set-error">设为全局错误节点</button>
+            <button id="delete-node" class="btn-danger">删除此节点</button>
         </div>
-        <h3>设备事件</h3>
-        <pre id="events">尚未连接设备</pre>
     </aside>
 </main>
-<script src="./app.js"></script>
+<div id="modal-container"></div>
+<div id="toast-container"></div>
+<script type="module" src="./app.js"></script>
 </body>
 </html>

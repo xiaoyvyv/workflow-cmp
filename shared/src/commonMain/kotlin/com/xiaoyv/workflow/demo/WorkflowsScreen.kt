@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarDuration
@@ -35,6 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -52,6 +56,7 @@ import com.xiaoyv.workflow.demo.support.ContentMarginHalf
 import com.xiaoyv.workflow.demo.support.PreviewColumn
 import com.xiaoyv.workflow.demo.support.Res
 import com.xiaoyv.workflow.demo.support.stringResource
+import com.xiaoyv.workflow.model.definition.ActionWorkflow
 import com.xiaoyv.workflow.model.log.ActionExecutionStatus
 import com.xiaoyv.workflow.node.core.ActionNodeRegistry
 import com.xiaoyv.workflow.ui.all.WorkflowDefaultSideEffectHost
@@ -67,6 +72,7 @@ fun WorkflowsRoute(viewModel: WorkflowsViewModel) {
     val effectHostState = rememberWorkflowSideEffectHostState()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val clipboardManager = LocalClipboardManager.current
 
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
@@ -182,10 +188,42 @@ fun WorkflowsRoute(viewModel: WorkflowsViewModel) {
                                         }
                                     },
                                     trailingContent = {
-                                        FilledTonalButton(onClick = {
-                                            viewModel.onIntent(WorkflowsIntent.RunSample(sample.id))
-                                        }) {
-                                            Text(stringResource(Res.string.workflow_example_run))
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            OutlinedButton(
+                                                onClick = {
+                                                    val json = runCatching { runtime.codec.export(sample) }
+                                                        .getOrElse { runtime.config.json.encodeToString(ActionWorkflow.serializer(), sample) }
+                                                    clipboardManager.setText(AnnotatedString(json))
+                                                    scope.launch {
+                                                        snackbar.showSnackbar(
+                                                            stringResource(Res.string.workflow_example_copied),
+                                                            duration = SnackbarDuration.Short,
+                                                        )
+                                                    }
+                                                },
+                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                modifier = Modifier.height(30.dp),
+                                            ) {
+                                                Text(
+                                                    stringResource(Res.string.workflow_example_copy),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                )
+                                            }
+                                            FilledTonalButton(
+                                                onClick = {
+                                                    viewModel.onIntent(WorkflowsIntent.RunSample(sample.id))
+                                                },
+                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                modifier = Modifier.height(30.dp),
+                                            ) {
+                                                Text(
+                                                    stringResource(Res.string.workflow_example_run),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                )
+                                            }
                                         }
                                     },
                                 )

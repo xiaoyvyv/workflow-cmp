@@ -76,8 +76,6 @@ data class ActionPortSpec(
     val maxConnections: Int = UNLIMITED,
     val label: String = id,
     val order: Int = 0,
-    val color: String? = null,
-    val editorVisible: Boolean = true,
 )
 
 /**

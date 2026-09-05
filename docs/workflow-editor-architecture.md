@@ -218,6 +218,8 @@ class ActionEditorBundleCodec(private val json: Json) {
 `workflow-editor-web` 当前是零构建步骤的静态 HTML/CSS/JavaScript 应用，便于直接复制到浏览器、大屏或设备 Bridge 托管目录。它以通用节点卡片和 `Editor Manifest`
 渲染，不维护节点类型专属组件；支持节点拖动、输出端口拖至输入端口的连线、连接数/类型预校验、表单编辑、导入导出以及设备保存/运行/日志。
 
+画布提供水平、垂直和紧凑三种自动布局。用户在布局下拉框中切换类型时立即重新排版；导入工作流也始终使用当前选中的布局类型，避免沿用其它设备或编辑器保存的坐标。紧凑布局通过多轮重心排序得到拓扑顺序，再按列填充为二维网格，避免长工作流始终排成单行；关联节点会尽可能相邻，以降低边的长度与交叉概率。
+
 如果后续需要平移缩放、框选、缩略图或高级自动布局，可在不改变 `ActionWorkflow`、Manifest 或 Bridge 协议的前提下替换画布实现为 React Flow/XYFlow。Kuiver 保留为 Compose 端只读预览。
 
 Kuiver 保留给 Compose Demo 的只读图预览即可。它的图模型以节点对边为中心，当前接入还需合并相同起止节点的边，无法忠实表达本项目的端口级 `ActionEdge`。

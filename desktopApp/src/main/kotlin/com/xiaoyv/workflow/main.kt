@@ -25,10 +25,13 @@ import com.xiaoyv.workflow.editor.bridge.contract.EditorDeviceDescriptor
 import com.xiaoyv.workflow.editor.bridge.contract.EditorWorkflowService
 import com.xiaoyv.workflow.editor.bridge.contract.InMemoryEditorWorkflowRepository
 import com.xiaoyv.workflow.editor.bridge.jvm.EditorBridgeServer
+import com.xiaoyv.workflow.editor.bridge.jvm.EditorEngineRunController
 import com.xiaoyv.workflow.editor.bridge.jvm.startEditorBridge
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.netty.NettyApplicationEngine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -124,11 +127,19 @@ private class DesktopEditorBridgeController(
                     repository = InMemoryEditorWorkflowRepository(),
                     manifestCodec = viewModel.runtime.editorManifestCodec,
                 )
+            val runController =
+                EditorEngineRunController(
+                    service = service,
+                    engine = viewModel.runtime.engine,
+                    sideEffectHandler = viewModel.sideEffectHandler,
+                    scope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
+                )
             val bridge =
                 EditorBridgeServer(
                     service = service,
                     device = EditorDeviceDescriptor(name = EDITOR_BRIDGE_DEVICE_NAME),
                     json = viewModel.runtime.config.json,
+                    runController = runController,
                 )
             startEditorBridge(
                 bridge = bridge,

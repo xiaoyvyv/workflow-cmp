@@ -1,5 +1,19 @@
 package com.xiaoyv.workflow.node.core
 
+import com.xiaoyv.workflow.Immutable
+import kotlinx.serialization.Serializable
+
+/**
+ * 节点分类描述规格。
+ */
+@Immutable
+@Serializable
+data class ActionCategorySpec(
+    val id: String,
+    val label: String,
+    val description: String = "",
+)
+
 /**
  * 内置节点面向编辑器展示与筛选的稳定分类。
  *
@@ -105,5 +119,30 @@ object ActionNodeCategory {
      * 哔哩哔哩专用节点。
      */
     const val BILIBILI = "bilibili"
-}
 
+    val allSpecs: Map<String, ActionCategorySpec> = listOf(
+        ActionCategorySpec(FLOW, "流程控制", "控制工作流的启动、结束、延迟、子流程及异常处理"),
+        ActionCategorySpec(CONTROL, "条件分支", "基于条件表达式或匹配规则进行逻辑分支流转"),
+        ActionCategorySpec(LOOP, "循环迭代", "提供 While、For-Each 循环与跳出控制"),
+        ActionCategorySpec(DATA, "基础数据", "变量定义、赋值与基础数据合并处理"),
+        ActionCategorySpec(TEXT, "文本处理", "字符串拼接、模板渲染、正则提取与替换"),
+        ActionCategorySpec(MATH, "数值计算", "算术运算、比较及数学函数"),
+        ActionCategorySpec(ARRAY, "数组处理", "列表与数组的过滤、映射、切片及聚合"),
+        ActionCategorySpec(OBJECT, "对象操作", "JSON 对象的属性读取、设置与合并"),
+        ActionCategorySpec(JSON, "JSON 转换", "结构化 JSON 对象的序列化与解析"),
+        ActionCategorySpec(URL, "URL 处理", "URL 链接解析、参数拼装与编码"),
+        ActionCategorySpec(CSV, "CSV 转换", "CSV 文本与行列表格数据的相互转换"),
+        ActionCategorySpec(DATE, "日期时间", "时间戳、日期解析、格式化及时间计算"),
+        ActionCategorySpec(CODEC, "文本编解码", "Base64、Hex、URL 与各种文本编码格式转换"),
+        ActionCategorySpec(CRYPTO, "加密哈希", "MD5、SHA、AES 等摘要与加密解密处理"),
+        ActionCategorySpec(HTTP, "网络请求", "发起 HTTP 请求并处理响应内容与请求头"),
+        ActionCategorySpec(STORAGE, "私有存储", "工作流专用的键值、文件与持久化沙盒存储"),
+        ActionCategorySpec(HTML, "HTML 解析", "HTML 文档解析与 CSS 选择器抽取"),
+        ActionCategorySpec(XML, "XML 解析", "XML 文档解析与 XPath 节点查询"),
+        ActionCategorySpec(ACTION, "系统动作", "调用宿主平台提供的原生系统能力与界面交互"),
+        ActionCategorySpec(BILIBILI, "哔哩哔哩", "哔哩哔哩开放 API 与视频数据扩展"),
+    ).associateBy { it.id }
+
+    fun specOf(id: String): ActionCategorySpec =
+        allSpecs[id] ?: ActionCategorySpec(id = id, label = id)
+}

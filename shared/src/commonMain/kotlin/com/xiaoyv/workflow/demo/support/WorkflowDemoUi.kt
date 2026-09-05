@@ -16,6 +16,8 @@ object Res {
     object string {
         const val workflow_title = "工作流"
         const val workflow_example_run = "运行"
+        const val workflow_example_copy = "复制"
+        const val workflow_example_copied = "工作流已复制到剪贴板"
         const val workflow_run_title = "运行结果"
         const val workflow_view_node_graph = "节点图"
         const val workflow_view_execution_log = "执行日志"
