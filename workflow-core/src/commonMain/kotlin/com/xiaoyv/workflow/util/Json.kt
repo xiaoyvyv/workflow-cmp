@@ -9,4 +9,5 @@ val defaultJson = Json {
     ignoreUnknownKeys = true
     isLenient = true
     explicitNulls = false
+    encodeDefaults = true
 }

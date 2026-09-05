@@ -1,6 +1,7 @@
 package com.xiaoyv.workflow.model.definition
 
 import com.xiaoyv.workflow.Immutable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
@@ -10,11 +11,17 @@ import kotlinx.serialization.json.JsonObject
 @Immutable
 @Serializable
 data class ActionNode(
+    @SerialName("id")
     val id: String,
+    @SerialName("type")
     val type: String,
+    @SerialName("nodeVersion")
     val nodeVersion: Int = 1,
+    @SerialName("label")
     val label: String = "",
+    @SerialName("config")
     val config: JsonObject = JsonObject(emptyMap()),
+    @SerialName("layout")
     val layout: ActionNodeLayout = ActionNodeLayout(),
 )
 
@@ -24,7 +31,9 @@ data class ActionNode(
 @Immutable
 @Serializable
 data class ActionNodeLayout(
+    @SerialName("x")
     val x: Float = 0f,
+    @SerialName("y")
     val y: Float = 0f,
 )
 
@@ -34,9 +43,13 @@ data class ActionNodeLayout(
 @Immutable
 @Serializable
 data class ActionEdge(
+    @SerialName("id")
     val id: String,
+    @SerialName("kind")
     val kind: String = ActionPortKind.CONTROL,
+    @SerialName("source")
     val source: ActionPortRef,
+    @SerialName("target")
     val target: ActionPortRef,
 )
 
@@ -46,7 +59,9 @@ data class ActionEdge(
 @Immutable
 @Serializable
 data class ActionPortRef(
+    @SerialName("nodeId")
     val nodeId: String,
+    @SerialName("portId")
     val portId: String,
 )
 

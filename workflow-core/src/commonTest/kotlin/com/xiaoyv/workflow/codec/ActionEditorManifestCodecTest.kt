@@ -15,8 +15,11 @@ import com.xiaoyv.workflow.node.core.ActionPortSpec
 import com.xiaoyv.workflow.util.defaultJson
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -69,6 +72,33 @@ class ActionEditorManifestCodecTest {
         assertEquals("demo.legacy", node.editor.title)
         assertEquals(listOf("required"), node.editor.fields.map { it.key })
         assertTrue(node.editor.fields.single().required)
+    }
+
+    @Test
+    fun explicitlyExportsEmptyEditorFieldsForWebEditorCompatibility() {
+        val registry =
+            ActionNodeRegistry(
+                listOf(
+                    definition(
+                        type = "demo.empty_fields",
+                        editor = ActionNodeEditorSpec(title = "无配置节点"),
+                        requiredKeys = emptySet(),
+                    )
+                )
+            )
+
+        val raw = ActionEditorManifestCodec(defaultJson, registry).export()
+        val nodeJson =
+            defaultJson
+                .parseToJsonElement(raw)
+                .jsonObject["nodeTypes"]
+                ?.jsonArray
+                ?.single()
+                ?.jsonObject
+                ?: error("Manifest 未导出节点")
+        val editorJson = nodeJson["editor"]?.jsonObject ?: error("节点未导出 editor")
+
+        assertEquals(JsonArray(emptyList()), editorJson["fields"])
     }
 
     @Test

@@ -68,7 +68,12 @@ class DefaultActionWorkflowFileStorage(
 
     override fun resolveSandboxPath(workflowId: String, path: String): PlatformFile {
         if (!workflowId.matches(WORKFLOW_ID_PATTERN)) throw invalidWorkflowId(workflowId)
-        if (path.isBlank() || PlatformFile(path).isAbsolute() || path.split('/', '\\').any { it == ".." }) {
+        if (
+            path.isBlank() ||
+            isAbsolutePath(path) ||
+            path == homeDir.absolutePath() ||
+            path.split('/', '\\').any { it == ".." }
+        ) {
             throw accessDenied(workflowId)
         }
         val sandbox = sandboxDir(workflowId)
@@ -100,8 +105,8 @@ class DefaultActionWorkflowFileStorage(
     override suspend fun writeBytes(workflowId: String, path: String, bytes: ByteArray, append: Boolean): Unit = runFileOperation(workflowId) {
         val target = resolveSandboxPath(workflowId, path)
         target.parent()?.createDirectories()
-        val buffer = Buffer().apply { write(bytes) }
-        target.sink(append).use { it.write(buffer, bytes.size.toLong()) }
+        val content = if (append && target.exists()) target.readBytes() + bytes else bytes
+        target write content
     }
 
     override fun workingDirectory(workflowId: String): String {
@@ -203,6 +208,12 @@ class DefaultActionWorkflowFileStorage(
     }
 
     private fun sandboxDir(workflowId: String): PlatformFile = homeDir / workflowId
+
+    private fun isAbsolutePath(path: String): Boolean =
+        PlatformFile(path).isAbsolute() ||
+                path.startsWith('/') ||
+                path.startsWith('\\') ||
+                WINDOWS_ABSOLUTE_PATH.matches(path)
 
     private fun existingPath(workflowId: String, path: String): PlatformFile = resolveSandboxPath(workflowId, path).also {
         if (!it.exists()) throw notFound(workflowId)
@@ -338,6 +349,7 @@ class DefaultActionWorkflowFileStorage(
         const val MAX_ARCHIVE_ENTRY_BYTES = 100 * 1024 * 1024L
         const val MAX_ARCHIVE_ENTRY_COUNT = 1_000
         const val BUFFER_SIZE = 256 * 1024
+        val WINDOWS_ABSOLUTE_PATH = Regex("^[A-Za-z]:[/\\\\].*")
         val WORKFLOW_ID_PATTERN = Regex("[A-Za-z0-9_-]+")
     }
 }
