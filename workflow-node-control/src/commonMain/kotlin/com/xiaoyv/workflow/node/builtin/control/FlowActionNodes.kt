@@ -58,6 +58,7 @@ private fun startDefinition() = ActionNodeDefinition(
         type = ActionNodeType.FLOW_START,
         category = ActionNodeCategory.FLOW,
         outputPorts = persistentListOf(nextPort),
+        editor = ControlNodeEditorCatalog.start,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "next") },
 )
@@ -72,6 +73,7 @@ private fun flowSwitchDefinition() = ActionNodeDefinition(
             defaultPort,
         ),
         requiredConfigKeys = setOf(ActionFlowConfigKey.VALUE, ActionFlowConfigKey.CASES),
+        editor = ControlNodeEditorCatalog.flowSwitch,
     ),
     executor = { node, context ->
         val value = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.VALUE], context).jsonPrimitive.content
@@ -92,6 +94,7 @@ private fun endDefinition() = ActionNodeDefinition(
         type = ActionNodeType.FLOW_END,
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
+        editor = ControlNodeEditorCatalog.end,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "") },
 )
@@ -103,6 +106,7 @@ private fun flowDelayDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.DELAY_MILLIS),
+        editor = ControlNodeEditorCatalog.delay,
     ),
     executor = { node, context ->
         val millis = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.DELAY_MILLIS], context)
@@ -125,6 +129,7 @@ private fun flowLogDefinition(logger: ActionWorkflowLogger) = ActionNodeDefiniti
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.MESSAGE),
+        editor = ControlNodeEditorCatalog.flowLog,
     ),
     executor = { node, context ->
         val message = ActionTemplateResolver.resolveText(node.config.string(ActionFlowConfigKey.MESSAGE), context)
@@ -149,6 +154,7 @@ private fun flowAssertDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.CONDITION),
+        editor = ControlNodeEditorCatalog.flowAssert,
     ),
     executor = { node, context ->
         val matched = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.CONDITION], context)
@@ -165,6 +171,7 @@ private fun flowStopDefinition() = ActionNodeDefinition(
         type = ActionNodeType.FLOW_STOP,
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
+        editor = ControlNodeEditorCatalog.stop,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "") },
 )
@@ -175,6 +182,7 @@ private fun flowDebugDefinition(logger: ActionWorkflowLogger) = ActionNodeDefini
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
+        editor = ControlNodeEditorCatalog.flowDebug,
     ),
     executor = { node, context ->
         val message = node.config[ActionFlowConfigKey.MESSAGE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) } ?: "Debug Info"
@@ -202,6 +210,7 @@ private fun flowTryDefinition() = ActionNodeDefinition(
             finallyPort,
             nextPort,
         ),
+        editor = ControlNodeEditorCatalog.flowTry,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = ActionControlPortId.TRY) },
 )
@@ -212,6 +221,7 @@ private fun flowCatchDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
+        editor = ControlNodeEditorCatalog.flowCatch,
     ),
     executor = { _, context ->
         val lastOutput = context.stepOutputs.values.lastOrNull()
@@ -231,6 +241,7 @@ private fun flowFinallyDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
+        editor = ControlNodeEditorCatalog.flowFinally,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = ActionControlPortId.NEXT) },
 )
@@ -242,6 +253,7 @@ private fun flowCallDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.WORKFLOW_ID, ActionFlowConfigKey.OUTPUT_KEY),
+        editor = ControlNodeEditorCatalog.flowCall,
     ),
     executor = { node, context ->
         val workflowId = ActionTemplateResolver.resolveText(node.config.string(ActionFlowConfigKey.WORKFLOW_ID), context)
@@ -262,6 +274,7 @@ private fun flowReturnDefinition() = ActionNodeDefinition(
         type = ActionNodeType.FLOW_RETURN,
         category = ActionNodeCategory.FLOW,
         inputPorts = persistentListOf(inPort),
+        editor = ControlNodeEditorCatalog.returnNode,
     ),
     executor = { node, context ->
         val outputVal = node.config[ActionFlowConfigKey.OUTPUT]?.let { ActionTemplateResolver.resolveElement(it, context) } ?: buildJsonObject {}
@@ -281,6 +294,7 @@ private fun flowParallelDefinition() = ActionNodeDefinition(
             branchesPort,
             failurePort,
         ),
+        editor = ControlNodeEditorCatalog.parallel,
     ),
     executor = { _, _ -> ActionNodeExecutionResult(outputPortId = ActionControlPortId.BRANCHES) },
 )
@@ -292,6 +306,7 @@ private fun flowJoinDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.VALUES, ActionFlowConfigKey.OUTPUT_KEY),
+        editor = ControlNodeEditorCatalog.join,
     ),
     executor = { node, context ->
         val values = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.VALUES], context)
@@ -310,6 +325,7 @@ private fun flowRetryDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.RETRY_COUNT),
+        editor = ControlNodeEditorCatalog.flowRetry,
     ),
     executor = { node, context ->
         val count = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.RETRY_COUNT], context).jsonPrimitive.content.toInt()
@@ -329,6 +345,7 @@ private fun flowTimeoutDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.TIMEOUT_MILLIS),
+        editor = ControlNodeEditorCatalog.flowTimeout,
     ),
     executor = { node, context ->
         val timeout = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.TIMEOUT_MILLIS], context).jsonPrimitive.content.toLong()
@@ -346,6 +363,7 @@ private fun flowWaitUntilDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.CONDITION),
+        editor = ControlNodeEditorCatalog.flowWaitUntil,
     ),
     executor = { node, context ->
         val condition = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.CONDITION], context).jsonPrimitive.boolean
@@ -363,6 +381,7 @@ private fun flowRateLimitDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionFlowConfigKey.DELAY_MILLIS),
+        editor = ControlNodeEditorCatalog.flowRateLimit,
     ),
     executor = { node, context ->
         val delayMs = ActionTemplateResolver.resolveElement(node.config[ActionFlowConfigKey.DELAY_MILLIS], context).jsonPrimitive.content.toLong()

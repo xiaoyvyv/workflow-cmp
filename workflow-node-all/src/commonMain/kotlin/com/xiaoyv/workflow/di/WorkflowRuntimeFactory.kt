@@ -1,5 +1,6 @@
 package com.xiaoyv.workflow.di
 
+import com.xiaoyv.workflow.codec.ActionEditorManifestCodec
 import com.xiaoyv.workflow.codec.ActionWorkflowCodec
 import com.xiaoyv.workflow.engine.ActionWorkflowValidator
 import com.xiaoyv.workflow.engine.runtime.ActionWorkflowEngine
@@ -20,8 +21,12 @@ data class WorkflowRuntime(
     val registry: ActionNodeRegistry,
     val validator: ActionWorkflowValidator,
     val codec: ActionWorkflowCodec,
+    /**
+     * 当前注册节点的编辑器渲染前置数据导出器。
+     */
+    val editorManifestCodec: ActionEditorManifestCodec,
     val engine: ActionWorkflowEngine,
-    val config: WorkflowRuntimeConfig
+    val config: WorkflowRuntimeConfig,
 )
 
 data class WorkflowRuntimeConfig(
@@ -39,20 +44,24 @@ fun createWorkflowRuntime(
     config: WorkflowRuntimeConfig,
     nodeDefinitions: List<ActionNodeDefinition> = emptyList(),
 ): WorkflowRuntime {
-    val registry = ActionNodeRegistry(
-        nodeDefinitions = builtInActionNodeDefinitions(
-            httpRequestExecutor = config.httpRequestExecutor,
-            preferencesStore = config.preferencesStore,
-            fileStorage = config.fileStorage,
-            logger = config.logger,
-        ) + nodeDefinitions
-    )
+    val registry =
+        ActionNodeRegistry(
+            nodeDefinitions =
+                builtInActionNodeDefinitions(
+                    httpRequestExecutor = config.httpRequestExecutor,
+                    preferencesStore = config.preferencesStore,
+                    fileStorage = config.fileStorage,
+                    logger = config.logger,
+                ) + nodeDefinitions
+        )
     val validator = ActionWorkflowValidator(registry)
     val codec = ActionWorkflowCodec(config.json, validator, registry)
-    val engine = ActionWorkflowEngine(
-        registry = registry,
-        validator = validator,
-        now = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
-    )
-    return WorkflowRuntime(registry, validator, codec, engine, config)
+    val editorManifestCodec = ActionEditorManifestCodec(config.json, registry)
+    val engine =
+        ActionWorkflowEngine(
+            registry = registry,
+            validator = validator,
+            now = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
+        )
+    return WorkflowRuntime(registry, validator, codec, editorManifestCodec, engine, config)
 }

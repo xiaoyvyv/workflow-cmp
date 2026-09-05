@@ -41,6 +41,18 @@ import com.xiaoyv.workflow.model.spec.ActionControlConfigKey.OUTPUT_KEY
 import com.xiaoyv.workflow.model.spec.ActionControlConfigKey.RIGHT
 import com.xiaoyv.workflow.model.spec.ActionControlConfigKey.STATUS_CODE
 import com.xiaoyv.workflow.model.spec.ActionControlConfigKey.VALUE
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.CRC32
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.MD5
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA3_224
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA3_256
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA3_384
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA3_512
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA_1
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA_224
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA_256
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA_384
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SHA_512
+import com.xiaoyv.workflow.model.spec.ActionCryptoAlgorithm.SM3
 import com.xiaoyv.workflow.model.spec.ActionCryptoConfigKey.ALGORITHM
 import com.xiaoyv.workflow.model.spec.ActionCryptoConfigKey.KEY_BYTES
 import com.xiaoyv.workflow.model.spec.ActionCryptoConfigKey.OUTPUT_KEY
@@ -76,6 +88,11 @@ import com.xiaoyv.workflow.model.spec.ActionDateConfigKey.TIMESTAMP
 import com.xiaoyv.workflow.model.spec.ActionDateConfigKey.TIMESTAMP_LEFT
 import com.xiaoyv.workflow.model.spec.ActionDateConfigKey.TIMESTAMP_RIGHT
 import com.xiaoyv.workflow.model.spec.ActionDateConfigKey.UNIT
+import com.xiaoyv.workflow.model.spec.ActionDateTimeUnit.DAYS
+import com.xiaoyv.workflow.model.spec.ActionDateTimeUnit.HOURS
+import com.xiaoyv.workflow.model.spec.ActionDateTimeUnit.MILLISECONDS
+import com.xiaoyv.workflow.model.spec.ActionDateTimeUnit.MINUTES
+import com.xiaoyv.workflow.model.spec.ActionDateTimeUnit.SECONDS
 import com.xiaoyv.workflow.model.spec.ActionErrorKey.CAUSE_CLASS
 import com.xiaoyv.workflow.model.spec.ActionErrorKey.CAUSE_MESSAGE
 import com.xiaoyv.workflow.model.spec.ActionErrorKey.CODE
@@ -119,6 +136,10 @@ import com.xiaoyv.workflow.model.spec.ActionFlowConfigKey.VALUE
 import com.xiaoyv.workflow.model.spec.ActionFlowConfigKey.VALUES
 import com.xiaoyv.workflow.model.spec.ActionFlowConfigKey.VARIABLES
 import com.xiaoyv.workflow.model.spec.ActionFlowConfigKey.WORKFLOW_ID
+import com.xiaoyv.workflow.model.spec.ActionFlowLogLevel.DEBUG
+import com.xiaoyv.workflow.model.spec.ActionFlowLogLevel.ERROR
+import com.xiaoyv.workflow.model.spec.ActionFlowLogLevel.INFO
+import com.xiaoyv.workflow.model.spec.ActionFlowLogLevel.WARN
 import com.xiaoyv.workflow.model.spec.ActionHashAlgorithm.CRC32
 import com.xiaoyv.workflow.model.spec.ActionHashAlgorithm.MD5
 import com.xiaoyv.workflow.model.spec.ActionHashAlgorithm.SHA3_224
@@ -137,7 +158,18 @@ import com.xiaoyv.workflow.model.spec.ActionHtmlConfigKey.NAME
 import com.xiaoyv.workflow.model.spec.ActionHtmlConfigKey.OPERATION
 import com.xiaoyv.workflow.model.spec.ActionHtmlConfigKey.OUTPUT_KEY
 import com.xiaoyv.workflow.model.spec.ActionHtmlConfigKey.SELECTOR
-
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.ALL_HTML
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.ALL_OUTER_HTML
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.ALL_TEXT
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.ATTR
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.DATA
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.EXISTS
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.HTML
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.ID
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.OUTER_HTML
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.TAG
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.TEXT
+import com.xiaoyv.workflow.model.spec.ActionHtmlOperation.VALUE
 import com.xiaoyv.workflow.model.spec.ActionHttpBodyType.FORM_URL_ENCODED
 import com.xiaoyv.workflow.model.spec.ActionHttpBodyType.JSON
 import com.xiaoyv.workflow.model.spec.ActionHttpBodyType.TEXT
@@ -155,6 +187,12 @@ import com.xiaoyv.workflow.model.spec.ActionHttpConfigKey.RETRY_DELAY_MILLIS
 import com.xiaoyv.workflow.model.spec.ActionHttpConfigKey.TIMEOUT_MILLIS
 import com.xiaoyv.workflow.model.spec.ActionHttpConfigKey.URL
 import com.xiaoyv.workflow.model.spec.ActionHttpConfigKey.USE_LOCAL_COOKIE_STORAGE
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.DELETE
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.GET
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.HEAD
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.PATCH
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.POST
+import com.xiaoyv.workflow.model.spec.ActionHttpMethod.PUT
 import com.xiaoyv.workflow.model.spec.ActionHttpResponseKey.BODY
 import com.xiaoyv.workflow.model.spec.ActionHttpResponseKey.CONTENT_TYPE
 import com.xiaoyv.workflow.model.spec.ActionHttpResponseKey.FILE_NAME
@@ -457,6 +495,28 @@ internal object ActionNodeConfigKey {
     const val GROUP_VALUES = "groupValues"
     const val APPEND = "append"
 
+    // HTTP Method
+    const val HTTP_GET = "GET"
+    const val HTTP_POST = "POST"
+    const val HTTP_PUT = "PUT"
+    const val HTTP_DELETE = "DELETE"
+    const val HTTP_PATCH = "PATCH"
+    const val HTTP_HEAD = "HEAD"
+
+    // Crypto Algorithm (canonical identifier used in editor/config)
+    const val ALGO_MD5 = "MD5"
+    const val ALGO_SHA_1 = "SHA-1"
+    const val ALGO_SHA_224 = "SHA-224"
+    const val ALGO_SHA_256 = "SHA-256"
+    const val ALGO_SHA_384 = "SHA-384"
+    const val ALGO_SHA_512 = "SHA-512"
+    const val ALGO_SHA3_224 = "SHA3-224"
+    const val ALGO_SHA3_256 = "SHA3-256"
+    const val ALGO_SHA3_384 = "SHA3-384"
+    const val ALGO_SHA3_512 = "SHA3-512"
+    const val ALGO_SM3 = "SM3"
+    const val ALGO_CRC32 = "CRC32"
+
     // HTTP & Response Keys
     const val RAW_BODY = "rawBody"
     const val IS_SUCCESS = "isSuccess"
@@ -477,11 +537,26 @@ internal object ActionNodeConfigKey {
     const val DEEP_APPEND_ARRAYS = "deep_append_arrays"
 
     // Html Query Operation
+    const val ATTR = "attr"
+    const val TAG = "tag"
+    const val ID = "id"
     const val OUTER_HTML = "outer_html"
     const val EXISTS = "exists"
     const val ALL_TEXT = "all_text"
     const val ALL_HTML = "all_html"
     const val ALL_OUTER_HTML = "all_outer_html"
+
+    // Log Level
+    const val DEBUG = "debug"
+    const val INFO = "info"
+    const val WARN = "warn"
+
+    // Date Time Unit
+    const val DAYS = "days"
+    const val HOURS = "hours"
+    const val MINUTES = "minutes"
+    const val SECONDS = "seconds"
+    const val MILLISECONDS = "milliseconds"
 
     // Hash Algorithm
     const val SHA_256 = "sha256"
@@ -984,6 +1059,69 @@ object ActionArrayFilterOperator {
 }
 
 /**
+ * HTML DOM 元素提取操作指令值。
+ *
+ * @property TEXT 提取元素的纯文本内容
+ * @property ATTR 提取指定属性值
+ * @property TAG 提取元素标签名
+ * @property HTML 提取内部 HTML
+ * @property OUTER_HTML 提取含自身在内的完整 HTML
+ * @property ID 提取 id 属性
+ * @property DATA 提取 data 属性内容
+ * @property VALUE 提取 value 属性
+ * @property EXISTS 判断元素是否存在
+ * @property ALL_TEXT 提取所有匹配元素的文本数组
+ * @property ALL_HTML 提取所有匹配元素的内部 HTML 数组
+ * @property ALL_OUTER_HTML 提取所有匹配元素的完整 HTML 数组
+ */
+object ActionHtmlOperation {
+    const val TEXT = ActionNodeConfigKey.TEXT
+    const val ATTR = ActionNodeConfigKey.ATTR
+    const val TAG = ActionNodeConfigKey.TAG
+    const val HTML = ActionNodeConfigKey.HTML
+    const val OUTER_HTML = ActionNodeConfigKey.OUTER_HTML
+    const val ID = ActionNodeConfigKey.ID
+    const val DATA = ActionNodeConfigKey.DATA
+    const val VALUE = ActionNodeConfigKey.VALUE
+    const val EXISTS = ActionNodeConfigKey.EXISTS
+    const val ALL_TEXT = ActionNodeConfigKey.ALL_TEXT
+    const val ALL_HTML = ActionNodeConfigKey.ALL_HTML
+    const val ALL_OUTER_HTML = ActionNodeConfigKey.ALL_OUTER_HTML
+}
+
+/**
+ * 日志节点打印级别枚举值。
+ *
+ * @property DEBUG 调试级别
+ * @property INFO  信息级别
+ * @property WARN  警告级别
+ * @property ERROR 错误级别
+ */
+object ActionFlowLogLevel {
+    const val DEBUG = ActionNodeConfigKey.DEBUG
+    const val INFO = ActionNodeConfigKey.INFO
+    const val WARN = ActionNodeConfigKey.WARN
+    const val ERROR = ActionNodeConfigKey.ERROR
+}
+
+/**
+ * 日期时间偏移单位枚举值。
+ *
+ * @property DAYS         天
+ * @property HOURS        小时
+ * @property MINUTES      分钟
+ * @property SECONDS      秒
+ * @property MILLISECONDS 毫秒
+ */
+object ActionDateTimeUnit {
+    const val DAYS = ActionNodeConfigKey.DAYS
+    const val HOURS = ActionNodeConfigKey.HOURS
+    const val MINUTES = ActionNodeConfigKey.MINUTES
+    const val SECONDS = ActionNodeConfigKey.SECONDS
+    const val MILLISECONDS = ActionNodeConfigKey.MILLISECONDS
+}
+
+/**
  * 日期与时间处理节点的配置键。
  *
  * @property TEXT 待解析或格式化的日期时间字符串
@@ -1073,6 +1211,57 @@ object ActionHttpBodyType {
     const val JSON = ActionNodeConfigKey.JSON
     const val TEXT = ActionNodeConfigKey.TEXT
     const val FORM_URL_ENCODED = ActionNodeConfigKey.FORM_URL_ENCODED
+}
+
+/**
+ * HTTP 请求方法枚举局。
+ *
+ * @property GET    HTTP GET 请求
+ * @property POST   HTTP POST 请求
+ * @property PUT    HTTP PUT 请求
+ * @property DELETE HTTP DELETE 请求
+ * @property PATCH  HTTP PATCH 请求
+ * @property HEAD   HTTP HEAD 请求
+ */
+object ActionHttpMethod {
+    const val GET = ActionNodeConfigKey.HTTP_GET
+    const val POST = ActionNodeConfigKey.HTTP_POST
+    const val PUT = ActionNodeConfigKey.HTTP_PUT
+    const val DELETE = ActionNodeConfigKey.HTTP_DELETE
+    const val PATCH = ActionNodeConfigKey.HTTP_PATCH
+    const val HEAD = ActionNodeConfigKey.HTTP_HEAD
+}
+
+/**
+ * 密码哈希算法标识枚举（编辑器选项协议字符串）。
+ * 注：运行时通过 resolveAlgorithm() 工具方法对此字符串进行标准化解析。
+ *
+ * @property MD5       MD5 摘要算法
+ * @property SHA_1     SHA-1 摘要算法
+ * @property SHA_224   SHA-224 摘要算法
+ * @property SHA_256   SHA-256 摘要算法
+ * @property SHA_384   SHA-384 摘要算法
+ * @property SHA_512   SHA-512 摘要算法
+ * @property SHA3_224  SHA3-224 摘要算法
+ * @property SHA3_256  SHA3-256 摘要算法
+ * @property SHA3_384  SHA3-384 摘要算法
+ * @property SHA3_512  SHA3-512 摘要算法
+ * @property SM3       国密 SM3 摘要算法
+ * @property CRC32     CRC32 循环冗余校验
+ */
+object ActionCryptoAlgorithm {
+    const val MD5 = ActionNodeConfigKey.ALGO_MD5
+    const val SHA_1 = ActionNodeConfigKey.ALGO_SHA_1
+    const val SHA_224 = ActionNodeConfigKey.ALGO_SHA_224
+    const val SHA_256 = ActionNodeConfigKey.ALGO_SHA_256
+    const val SHA_384 = ActionNodeConfigKey.ALGO_SHA_384
+    const val SHA_512 = ActionNodeConfigKey.ALGO_SHA_512
+    const val SHA3_224 = ActionNodeConfigKey.ALGO_SHA3_224
+    const val SHA3_256 = ActionNodeConfigKey.ALGO_SHA3_256
+    const val SHA3_384 = ActionNodeConfigKey.ALGO_SHA3_384
+    const val SHA3_512 = ActionNodeConfigKey.ALGO_SHA3_512
+    const val SM3 = ActionNodeConfigKey.ALGO_SM3
+    const val CRC32 = ActionNodeConfigKey.ALGO_CRC32
 }
 
 /**

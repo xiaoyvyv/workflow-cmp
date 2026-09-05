@@ -18,185 +18,301 @@ import kotlinx.serialization.json.JsonPrimitive
 /**
  * 文本与二进制编解码内置节点。
  */
-val codecActionNodeDefinitions: List<ActionNodeDefinition> = listOf(
-    codecBase64EncodeDefinition(),
-    codecBase64DecodeDefinition(),
-    codecBase64UrlEncodeDefinition(),
-    codecBase64UrlDecodeDefinition(),
-    codecHexEncodeDefinition(),
-    codecHexDecodeDefinition(),
-    codecUrlEncodeDefinition(),
-    codecUrlDecodeDefinition(),
-    codecHtmlEscapeDefinition(),
-    codecHtmlUnescapeDefinition(),
-)
+val codecActionNodeDefinitions: List<ActionNodeDefinition> =
+    listOf(
+        codecBase64EncodeDefinition(),
+        codecBase64DecodeDefinition(),
+        codecBase64UrlEncodeDefinition(),
+        codecBase64UrlDecodeDefinition(),
+        codecHexEncodeDefinition(),
+        codecHexDecodeDefinition(),
+        codecUrlEncodeDefinition(),
+        codecUrlDecodeDefinition(),
+        codecHtmlEscapeDefinition(),
+        codecHtmlUnescapeDefinition(),
+    )
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-private fun codecBase64EncodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_BASE64_ENCODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        node.valueResult(
-            node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(kotlin.io.encoding.Base64.encode(text.encodeToByteArray())),
-        )
-    },
-)
+private fun codecBase64EncodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_BASE64_ENCODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.base64Encode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(kotlin.io.encoding.Base64.encode(text.encodeToByteArray())),
+            )
+        },
+    )
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-private fun codecBase64DecodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_BASE64_DECODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        val decoded = kotlin.io.encoding.Base64.withPadding(kotlin.io.encoding.Base64.PaddingOption.PRESENT_OPTIONAL)
-            .decode(text)
-            .decodeToString()
-        node.valueResult(
-            node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(decoded),
-        )
-    },
-)
+private fun codecBase64DecodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_BASE64_DECODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.base64Decode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            val decoded =
+                kotlin.io.encoding.Base64.withPadding(
+                    kotlin.io.encoding.Base64.PaddingOption.PRESENT_OPTIONAL
+                )
+                    .decode(text)
+                    .decodeToString()
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(decoded),
+            )
+        },
+    )
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-private fun codecBase64UrlEncodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_BASE64_URL_ENCODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        node.valueResult(
-            node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(kotlin.io.encoding.Base64.UrlSafe.encode(text.encodeToByteArray())),
-        )
-    },
-)
+private fun codecBase64UrlEncodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_BASE64_URL_ENCODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.base64UrlEncode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(kotlin.io.encoding.Base64.UrlSafe.encode(text.encodeToByteArray())),
+            )
+        },
+    )
 
 @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
-private fun codecBase64UrlDecodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_BASE64_URL_DECODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        val decoded = kotlin.io.encoding.Base64.UrlSafe.withPadding(kotlin.io.encoding.Base64.PaddingOption.ABSENT_OPTIONAL)
-            .decode(text)
-            .decodeToString()
-        node.valueResult(
-            node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(decoded),
-        )
-    },
-)
+private fun codecBase64UrlDecodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_BASE64_URL_DECODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.base64UrlDecode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            val decoded =
+                kotlin.io.encoding.Base64.UrlSafe.withPadding(
+                    kotlin.io.encoding.Base64.PaddingOption.ABSENT_OPTIONAL
+                )
+                    .decode(text)
+                    .decodeToString()
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(decoded),
+            )
+        },
+    )
 
 @OptIn(ExperimentalStdlibApi::class)
-private fun codecHexEncodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_HEX_ENCODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        node.valueResult(
-            node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
-            JsonPrimitive(text.encodeToByteArray().toHexString()),
-        )
-    },
-)
+private fun codecHexEncodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_HEX_ENCODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.hexEncode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(text.encodeToByteArray().toHexString()),
+            )
+        },
+    )
 
 @OptIn(ExperimentalStdlibApi::class)
-private fun codecHexDecodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_HEX_DECODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        val decoded = text.hexToByteArray().decodeToString()
-        node.valueResult(node.config.string(ActionCodecConfigKey.OUTPUT_KEY), JsonPrimitive(decoded))
-    },
-)
+private fun codecHexDecodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_HEX_DECODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.hexDecode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            val decoded = text.hexToByteArray().decodeToString()
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(decoded),
+            )
+        },
+    )
 
-private fun codecUrlEncodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_URL_ENCODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        node.valueResult(node.config.string(ActionCodecConfigKey.OUTPUT_KEY), JsonPrimitive(text.encodeURLQueryComponent(encodeFull = true)))
-    },
-)
+@OptIn(ExperimentalStdlibApi::class)
+private fun codecUrlEncodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_URL_ENCODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.urlEncode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(text.encodeURLQueryComponent(encodeFull = true)),
+            )
+        },
+    )
 
-private fun codecUrlDecodeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_URL_DECODE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        node.valueResult(node.config.string(ActionCodecConfigKey.OUTPUT_KEY), JsonPrimitive(text.decodeURLQueryComponent()))
-    },
-)
+@OptIn(ExperimentalStdlibApi::class)
+private fun codecUrlDecodeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_URL_DECODE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.urlDecode,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(text.decodeURLQueryComponent()),
+            )
+        },
+    )
 
-private fun codecHtmlEscapeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_HTML_ESCAPE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        val escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;")
-        node.valueResult(node.config.string(ActionCodecConfigKey.OUTPUT_KEY), JsonPrimitive(escaped))
-    },
-)
+private fun codecHtmlEscapeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_HTML_ESCAPE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.htmlEscape,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            val escaped =
+                text
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&#39;")
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(escaped),
+            )
+        },
+    )
 
-private fun codecHtmlUnescapeDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.CODEC_HTML_UNESCAPE,
-        category = ActionNodeCategory.CODEC,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val text = ActionTemplateResolver.resolveText(node.config.string(ActionCodecConfigKey.TEXT), context)
-        val unescaped = text.replace("&quot;", "\"").replace("&#39;", "'").replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
-        node.valueResult(node.config.string(ActionCodecConfigKey.OUTPUT_KEY), JsonPrimitive(unescaped))
-    },
-)
+private fun codecHtmlUnescapeDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.CODEC_HTML_UNESCAPE,
+                category = ActionNodeCategory.CODEC,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionCodecConfigKey.TEXT, ActionCodecConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.htmlUnescape,
+            ),
+        executor = { node, context ->
+            val text =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionCodecConfigKey.TEXT),
+                    context,
+                )
+            val unescaped =
+                text
+                    .replace("&quot;", "\"")
+                    .replace("&#39;", "'")
+                    .replace("&gt;", ">")
+                    .replace("&lt;", "<")
+                    .replace("&amp;", "&")
+            node.valueResult(
+                node.config.string(ActionCodecConfigKey.OUTPUT_KEY),
+                JsonPrimitive(unescaped),
+            )
+        },
+    )

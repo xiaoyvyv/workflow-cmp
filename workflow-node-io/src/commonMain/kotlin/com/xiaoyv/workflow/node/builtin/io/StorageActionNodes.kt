@@ -35,6 +35,7 @@ private fun storagePreferencesGetDefinition(preferencesStore: ActionWorkflowPref
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionStorageConfigKey.KEY, ActionStorageConfigKey.OUTPUT_KEY),
+        editor = IoNodeEditorCatalog.storageGet,
     ),
     executor = { node, context ->
         val key = ActionTemplateResolver.resolveText(node.config.string(ActionStorageConfigKey.KEY), context)
@@ -56,6 +57,7 @@ private fun storagePreferencesSetDefinition(preferencesStore: ActionWorkflowPref
             ActionStorageConfigKey.VALUE,
             ActionStorageConfigKey.OUTPUT_KEY,
         ),
+        editor = IoNodeEditorCatalog.storageSet,
     ),
     executor = { node, context ->
         val key = ActionTemplateResolver.resolveText(node.config.string(ActionStorageConfigKey.KEY), context)
@@ -72,6 +74,7 @@ private fun storagePreferencesDeleteDefinition(preferencesStore: ActionWorkflowP
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionStorageConfigKey.KEY, ActionStorageConfigKey.OUTPUT_KEY),
+        editor = IoNodeEditorCatalog.storageDelete,
     ),
     executor = { node, context ->
         val key = ActionTemplateResolver.resolveText(node.config.string(ActionStorageConfigKey.KEY), context)
@@ -90,6 +93,7 @@ private fun storagePreferencesHasDefinition(preferencesStore: ActionWorkflowPref
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionStorageConfigKey.KEY, ActionStorageConfigKey.OUTPUT_KEY),
+        editor = IoNodeEditorCatalog.storageHas,
     ),
     executor = { node, context ->
         val key = ActionTemplateResolver.resolveText(node.config.string(ActionStorageConfigKey.KEY), context)
@@ -106,6 +110,7 @@ private fun storagePreferencesClearDefinition(preferencesStore: ActionWorkflowPr
         category = ActionNodeCategory.STORAGE,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
+        editor = IoNodeEditorCatalog.storageClear,
     ),
     executor = { _, _ ->
         preferencesStore.clear()

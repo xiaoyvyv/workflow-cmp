@@ -43,11 +43,12 @@ val controlActionNodeDefinitions: List<ActionNodeDefinition> = listOf(
 
 private fun conditionIsEmptyDefinition() = ActionNodeDefinition(
     spec = ActionNodeSpec(
-        ActionNodeType.CONDITION_IS_EMPTY,
+        type = ActionNodeType.CONDITION_IS_EMPTY,
         category = ActionNodeCategory.CONTROL,
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
-        requiredConfigKeys = setOf(ActionControlConfigKey.VALUE)
+        requiredConfigKeys = setOf(ActionControlConfigKey.VALUE),
+        editor = ControlNodeEditorCatalog.conditionIsEmpty,
     ),
     executor = { node, context ->
         val value = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.VALUE], context)
@@ -62,6 +63,7 @@ private fun conditionIfDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
         requiredConfigKeys = setOf(ActionControlConfigKey.CONDITION),
+        editor = ControlNodeEditorCatalog.conditionIf,
     ),
     executor = { node, context ->
         val condition = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.CONDITION], context)
@@ -77,6 +79,7 @@ private fun httpStatusDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
         requiredConfigKeys = setOf(ActionControlConfigKey.STATUS_CODE),
+        editor = ControlNodeEditorCatalog.httpStatus,
     ),
     executor = { node, context ->
         val statusCode = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.STATUS_CODE], context)
@@ -99,6 +102,7 @@ private fun conditionEqualsDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
         requiredConfigKeys = setOf(ActionControlConfigKey.LEFT, ActionControlConfigKey.RIGHT),
+        editor = ControlNodeEditorCatalog.conditionEquals,
     ),
     executor = { node, context ->
         val left = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.LEFT], context)
@@ -111,13 +115,26 @@ private fun conditionEqualsDefinition() = ActionNodeDefinition(
     },
 )
 
-private fun conditionNotEqualsDefinition() = comparisonDefinition(ActionNodeType.CONDITION_NOT_EQUALS) { left, right -> left != right }
-private fun conditionGreaterThanDefinition() = numericComparisonDefinition(ActionNodeType.CONDITION_GREATER_THAN) { left, right -> left > right }
-private fun conditionGreaterThanOrEqualsDefinition() = numericComparisonDefinition(ActionNodeType.CONDITION_GREATER_THAN_OR_EQUALS) { left, right -> left >= right }
-private fun conditionLessThanDefinition() = numericComparisonDefinition(ActionNodeType.CONDITION_LESS_THAN) { left, right -> left < right }
-private fun conditionLessThanOrEqualsDefinition() = numericComparisonDefinition(ActionNodeType.CONDITION_LESS_THAN_OR_EQUALS) { left, right -> left <= right }
-private fun conditionAndDefinition() = booleanComparisonDefinition(ActionNodeType.CONDITION_AND) { left, right -> left && right }
-private fun conditionOrDefinition() = booleanComparisonDefinition(ActionNodeType.CONDITION_OR) { left, right -> left || right }
+private fun conditionNotEqualsDefinition() =
+    binaryConditionDefinition(ActionNodeType.CONDITION_NOT_EQUALS, ControlNodeEditorCatalog.conditionNotEquals) { left, right -> left != right }
+
+private fun conditionGreaterThanDefinition() =
+    binaryNumericConditionDefinition(ActionNodeType.CONDITION_GREATER_THAN, ControlNodeEditorCatalog.conditionGreaterThan) { left, right -> left > right }
+
+private fun conditionGreaterThanOrEqualsDefinition() =
+    binaryNumericConditionDefinition(ActionNodeType.CONDITION_GREATER_THAN_OR_EQUALS, ControlNodeEditorCatalog.conditionGreaterThanOrEquals) { left, right -> left >= right }
+
+private fun conditionLessThanDefinition() =
+    binaryNumericConditionDefinition(ActionNodeType.CONDITION_LESS_THAN, ControlNodeEditorCatalog.conditionLessThan) { left, right -> left < right }
+
+private fun conditionLessThanOrEqualsDefinition() =
+    binaryNumericConditionDefinition(ActionNodeType.CONDITION_LESS_THAN_OR_EQUALS, ControlNodeEditorCatalog.conditionLessThanOrEquals) { left, right -> left <= right }
+
+private fun conditionAndDefinition() =
+    binaryBooleanConditionDefinition(ActionNodeType.CONDITION_AND, ControlNodeEditorCatalog.conditionAnd) { left, right -> left && right }
+
+private fun conditionOrDefinition() =
+    binaryBooleanConditionDefinition(ActionNodeType.CONDITION_OR, ControlNodeEditorCatalog.conditionOr) { left, right -> left || right }
 
 private fun conditionNotDefinition() = ActionNodeDefinition(
     spec = ActionNodeSpec(
@@ -126,6 +143,7 @@ private fun conditionNotDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
         requiredConfigKeys = setOf(ActionControlConfigKey.VALUE),
+        editor = ControlNodeEditorCatalog.conditionNot,
     ),
     executor = { node, context ->
         val value = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.VALUE], context)
@@ -140,6 +158,7 @@ private fun conditionIsNullDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
         requiredConfigKeys = setOf(ActionControlConfigKey.VALUE),
+        editor = ControlNodeEditorCatalog.conditionIsNull,
     ),
     executor = { node, context ->
         val value = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.VALUE], context)
@@ -147,23 +166,25 @@ private fun conditionIsNullDefinition() = ActionNodeDefinition(
     },
 )
 
-private fun comparisonDefinition(type: String, comparison: (JsonElement, JsonElement) -> Boolean) =
-    binaryConditionDefinition(type) { left, right ->
-        comparison(left, right)
-    }
+private fun binaryNumericConditionDefinition(
+    type: String,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
+    comparison: (Double, Double) -> Boolean,
+) = binaryConditionDefinition(type, editor) { left, right ->
+    comparison(left.asNumber(ActionControlConfigKey.LEFT), right.asNumber(ActionControlConfigKey.RIGHT))
+}
 
-private fun numericComparisonDefinition(type: String, comparison: (Double, Double) -> Boolean) =
-    binaryConditionDefinition(type) { left, right ->
-        comparison(left.asNumber(ActionControlConfigKey.LEFT), right.asNumber(ActionControlConfigKey.RIGHT))
-    }
-
-private fun booleanComparisonDefinition(type: String, comparison: (Boolean, Boolean) -> Boolean) =
-    binaryConditionDefinition(type) { left, right ->
-        comparison(left.asBoolean(), right.asBoolean())
-    }
+private fun binaryBooleanConditionDefinition(
+    type: String,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
+    comparison: (Boolean, Boolean) -> Boolean,
+) = binaryConditionDefinition(type, editor) { left, right ->
+    comparison(left.asBoolean(), right.asBoolean())
+}
 
 private fun binaryConditionDefinition(
     type: String,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
     comparison: (JsonElement, JsonElement) -> Boolean,
 ): ActionNodeDefinition = ActionNodeDefinition(
     spec = ActionNodeSpec(
@@ -171,7 +192,8 @@ private fun binaryConditionDefinition(
         category = ActionNodeCategory.CONTROL,
         inputPorts = persistentListOf(inPort),
         outputPorts = conditionPorts,
-        requiredConfigKeys = setOf(ActionControlConfigKey.LEFT, ActionControlConfigKey.RIGHT)
+        requiredConfigKeys = setOf(ActionControlConfigKey.LEFT, ActionControlConfigKey.RIGHT),
+        editor = editor,
     ),
     executor = { node, context ->
         val left = ActionTemplateResolver.resolveElement(node.config[ActionControlConfigKey.LEFT], context)

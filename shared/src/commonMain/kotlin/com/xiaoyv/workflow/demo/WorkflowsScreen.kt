@@ -52,55 +52,16 @@ import com.xiaoyv.workflow.demo.support.ContentMarginHalf
 import com.xiaoyv.workflow.demo.support.PreviewColumn
 import com.xiaoyv.workflow.demo.support.Res
 import com.xiaoyv.workflow.demo.support.stringResource
-import com.xiaoyv.workflow.di.WorkflowRuntimeConfig
-import com.xiaoyv.workflow.di.createWorkflowRuntime
 import com.xiaoyv.workflow.model.log.ActionExecutionStatus
 import com.xiaoyv.workflow.node.core.ActionNodeRegistry
-import com.xiaoyv.workflow.platform.room.cookie.RoomActionCookiesStorage
-import com.xiaoyv.workflow.port.impl.DefaultActionHttpRequestExecutor
 import com.xiaoyv.workflow.ui.all.WorkflowDefaultSideEffectHost
 import com.xiaoyv.workflow.ui.core.rememberWorkflowSideEffectHostState
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.logging.LoggingFormat
 import kotlinx.coroutines.launch
 import okio.FileSystem
 
 @Composable
-fun WorkflowsRoute() {
-    val cookiesStorage = remember { RoomActionCookiesStorage() }
-    val httpClient = remember {
-        HttpClient {
-            install(HttpCookies) {
-                storage = cookiesStorage
-            }
-            install(Logging) {
-                level = LogLevel.ALL
-                format = LoggingFormat.OkHttp
-                logger = object : io.ktor.client.plugins.logging.Logger {
-                    override fun log(message: String) {
-                        println("[Network] $message")
-                    }
-                }
-            }
-        }
-    }
-
-    val runtime = remember {
-        createWorkflowRuntime(
-            config = WorkflowRuntimeConfig(
-                httpRequestExecutor = DefaultActionHttpRequestExecutor(
-                    httpClient,
-                ),
-            ),
-        )
-    }
-
-    val viewModel = remember(runtime) {
-        WorkflowsViewModel(runtime.engine)
-    }
+fun WorkflowsRoute(viewModel: WorkflowsViewModel) {
+    val runtime = viewModel.runtime
 
     val uiState by viewModel.uiState.collectAsState()
     val effectHostState = rememberWorkflowSideEffectHostState()
@@ -437,7 +398,9 @@ private fun WorkflowExampleRunPanel(
 @Composable
 @Preview
 private fun PreviewWorkflowsScreen() {
+    val viewModel = rememberWorkflowsViewModel()
+
     PreviewColumn(modifier = Modifier.fillMaxSize()) {
-        WorkflowsRoute()
+        WorkflowsRoute(viewModel)
     }
 }

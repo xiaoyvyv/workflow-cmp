@@ -1,69 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="128" height="128">
+<svg height="128" viewBox="0 0 256 256" width="128" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <!-- Background Gradient -->
-        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="bgGrad" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stop-color="#4F46E5" />
             <stop offset="50%" stop-color="#7C3AED" />
             <stop offset="100%" stop-color="#06B6D4" />
         </linearGradient>
 
         <!-- Edge Glow Gradients -->
-        <linearGradient id="edgeGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="edgeGrad1" x1="0%" x2="100%" y1="0%" y2="0%">
             <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.9" />
             <stop offset="100%" stop-color="#F472B6" stop-opacity="0.9" />
         </linearGradient>
-        <linearGradient id="edgeGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="edgeGrad2" x1="0%" x2="100%" y1="0%" y2="0%">
             <stop offset="0%" stop-color="#F472B6" stop-opacity="0.9" />
             <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.9" />
         </linearGradient>
-        <linearGradient id="nodeGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="nodeGradMain" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stop-color="#FFFFFF" />
             <stop offset="100%" stop-color="#E2E8F0" />
         </linearGradient>
-        <linearGradient id="nodeGradAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="nodeGradAccent" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stop-color="#FDE047" />
             <stop offset="100%" stop-color="#F97316" />
         </linearGradient>
 
         <!-- Drop Shadows -->
-        <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-            <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.45" />
+        <filter height="130%" id="shadow" width="130%" x="-10%" y="-10%">
+            <feDropShadow dx="0" dy="8" flood-color="#0F172A" flood-opacity="0.45" stdDeviation="12" />
         </filter>
-        <filter id="nodeGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#38BDF8" flood-opacity="0.8" />
+        <filter height="160%" id="nodeGlow" width="160%" x="-30%" y="-30%">
+            <feDropShadow dx="0" dy="0" flood-color="#38BDF8" flood-opacity="0.8" stdDeviation="6" />
         </filter>
     </defs>
 
     <!-- Squircle Container -->
-    <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#bgGrad)" filter="url(#shadow)" />
+    <rect fill="url(#bgGrad)" filter="url(#shadow)" height="224" rx="56" width="224" x="16" y="16" />
 
     <!-- Subtle Inner Border -->
-    <rect x="17" y="17" width="222" height="222" rx="55" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" />
+    <rect fill="none" height="222" rx="55" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" width="222" x="17" y="17" />
 
     <!-- DAG Flow Edges -->
     <!-- Top branch path: (68, 128) -> (128, 80) -> (188, 128) -->
-    <path d="M 68 128 C 96 128, 100 80, 128 80 C 156 80, 160 128, 188 128" fill="none" stroke="url(#edgeGrad1)" stroke-width="6" stroke-linecap="round" />
+    <path d="M 68 128 C 96 128, 100 80, 128 80 C 156 80, 160 128, 188 128" fill="none" stroke="url(#edgeGrad1)" stroke-linecap="round" stroke-width="6" />
 
     <!-- Bottom branch path: (68, 128) -> (128, 176) -> (188, 128) -->
-    <path d="M 68 128 C 96 128, 100 176, 128 176 C 156 176, 160 128, 188 128" fill="none" stroke="url(#edgeGrad2)" stroke-width="6" stroke-linecap="round" />
+    <path d="M 68 128 C 96 128, 100 176, 128 176 C 156 176, 160 128, 188 128" fill="none" stroke="url(#edgeGrad2)" stroke-linecap="round" stroke-width="6" />
 
     <!-- Direct center flow -->
-    <line x1="68" y1="128" x2="188" y2="128" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="3" stroke-dasharray="5 5" stroke-linecap="round" />
+    <line stroke="#FFFFFF" stroke-dasharray="5 5" stroke-linecap="round" stroke-opacity="0.4" stroke-width="3" x1="68" x2="188" y1="128" y2="128" />
 
     <!-- DAG Nodes -->
     <!-- Start Node (Left) -->
-    <circle cx="68" cy="128" r="16" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" />
-    <circle cx="68" cy="128" r="8" fill="#4F46E5" />
+    <circle cx="68" cy="128" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" r="16" />
+    <circle cx="68" cy="128" fill="#4F46E5" r="8" />
 
     <!-- Upper Fork Node (Top Center) -->
-    <circle cx="128" cy="80" r="14" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" />
-    <circle cx="128" cy="80" r="7" fill="#06B6D4" />
+    <circle cx="128" cy="80" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" r="14" />
+    <circle cx="128" cy="80" fill="#06B6D4" r="7" />
 
     <!-- Lower Fork Node (Bottom Center) -->
-    <circle cx="128" cy="176" r="14" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" />
-    <circle cx="128" cy="176" r="7" fill="#EC4899" />
+    <circle cx="128" cy="176" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" r="14" />
+    <circle cx="128" cy="176" fill="#EC4899" r="7" />
 
     <!-- End / Join Node (Right) -->
-    <circle cx="188" cy="128" r="18" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" />
-    <circle cx="188" cy="128" r="10" fill="url(#nodeGradAccent)" />
+    <circle cx="188" cy="128" fill="url(#nodeGradMain)" filter="url(#nodeGlow)" r="18" />
+    <circle cx="188" cy="128" fill="url(#nodeGradAccent)" r="10" />
 </svg>

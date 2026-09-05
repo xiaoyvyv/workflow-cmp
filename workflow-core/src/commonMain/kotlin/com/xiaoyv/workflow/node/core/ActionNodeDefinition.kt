@@ -8,6 +8,9 @@ import com.xiaoyv.workflow.model.execution.ActionNodeExecutionResult
 import com.xiaoyv.workflow.node.core.ActionPortConnectionLimit.UNLIMITED
 import com.xiaoyv.workflow.util.serialization.SerializeList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 /**
  * 节点的运行时定义，由规格、执行器与可选迁移器组成。
@@ -47,6 +50,7 @@ fun interface ActionNodeCapabilityResolver {
  * 供编辑器、校验器和执行器共用的节点端口与配置契约。
  */
 @Immutable
+@Serializable
 data class ActionNodeSpec(
     val type: String,
     val latestVersion: Int = 1,
@@ -55,18 +59,108 @@ data class ActionNodeSpec(
     val outputPorts: SerializeList<ActionPortSpec> = persistentListOf(),
     val requiredConfigKeys: Set<String> = emptySet(),
     val requiredCapabilities: Set<String> = emptySet(),
+    // 与渲染技术无关的编辑器描述。
+    // 节点执行器和编辑器从同一份 Spec 派生，避免维护独立的前端节点字典。
+    val editor: ActionNodeEditorSpec,
 )
 
 /**
  * 节点单个输入或输出端口的连接约束。
  */
 @Immutable
+@Serializable
 data class ActionPortSpec(
     val id: String,
     val kind: String = ActionPortKind.CONTROL,
     val direction: String,
     val maxConnections: Int = UNLIMITED,
+    val label: String = id,
+    val order: Int = 0,
+    val color: String? = null,
+    val editorVisible: Boolean = true,
 )
+
+/**
+ * 编辑器可消费的节点视觉与配置表单描述，不包含任何 Compose/HTML 类型
+ */
+@Immutable
+@Serializable
+data class ActionNodeEditorSpec(
+    val title: String,
+    val description: String = "",
+    val icon: String? = null,
+    val color: String? = null,
+    val defaultConfig: JsonObject = JsonObject(emptyMap()),
+    val fields: SerializeList<ActionConfigFieldSpec> = persistentListOf(),
+    val creatable: Boolean = true,
+)
+
+/**
+ * 单个节点配置项的通用表单描述。
+ */
+@Immutable
+@Serializable
+data class ActionConfigFieldSpec(
+    val key: String,
+    val label: String = key,
+    val kind: String = ActionEditorFieldKind.TEXT,
+    val description: String = "",
+    val group: String? = null,
+    val order: Int = 0,
+    val defaultValue: JsonElement? = null,
+    val placeholder: String? = null,
+    val options: SerializeList<ActionEditorFieldOption> = persistentListOf(),
+    val required: Boolean = false,
+    val readOnly: Boolean = false,
+    val sensitive: Boolean = false,
+    val editorHidden: Boolean = false,
+    val visibleWhen: ActionEditorFieldCondition? = null,
+    val enabledWhen: ActionEditorFieldCondition? = null,
+    val validation: ActionEditorFieldValidation? = null,
+)
+
+/**
+ * Non-executable config predicate; renderers must never evaluate supplied scripts.
+ */
+@Immutable
+@Serializable
+data class ActionEditorFieldCondition(val key: String, val equals: JsonElement)
+
+/**
+ * Portable UI validation hints. Runtime semantic validation remains in the node executor/validator.
+ */
+@Immutable
+@Serializable
+data class ActionEditorFieldValidation(
+    val minimum: Double? = null,
+    val maximum: Double? = null,
+    val pattern: String? = null,
+    val minLength: Int? = null,
+    val maxLength: Int? = null,
+)
+
+@Immutable
+@Serializable
+data class ActionEditorFieldOption(
+    val value: JsonElement,
+    val label: String,
+)
+
+/**
+ * 编辑器字段类型常量；前端以未知类型降级为只读 JSON，而不能执行脚本。
+ */
+object ActionEditorFieldKind {
+    const val TEXT = "text"
+    const val TEMPLATE_TEXT = "template-text"
+    const val TEXTAREA = "textarea"
+    const val NUMBER = "number"
+    const val BOOLEAN = "boolean"
+    const val SELECT = "select"
+    const val JSON = "json"
+    const val STRING_LIST = "string-list"
+    const val KEY_VALUE_LIST = "key-value-list"
+    const val SECRET_REFERENCE = "secret-reference"
+}
 
 /**
  * 端口连接数量限制。

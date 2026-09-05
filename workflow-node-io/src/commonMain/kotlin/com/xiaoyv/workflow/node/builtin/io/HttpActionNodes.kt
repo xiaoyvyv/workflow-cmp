@@ -53,6 +53,8 @@ private fun httpRequestDefinition(httpRequestExecutor: ActionHttpRequestExecutor
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = setOf(ActionHttpConfigKey.URL),
         requiredCapabilities = setOf(ActionCapability.NETWORK),
+
+        editor = IoNodeEditorCatalog.httpRequest,
     ),
     executor = { node, context ->
         val request = node.httpRequest(context)
@@ -75,6 +77,8 @@ private fun httpDownloadDefinition(
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = setOf(ActionHttpConfigKey.URL, ActionHttpConfigKey.PATH, ActionHttpConfigKey.OUTPUT_KEY),
         requiredCapabilities = setOf(ActionCapability.NETWORK),
+
+        editor = IoNodeEditorCatalog.httpDownload,
     ),
     executor = { node, context ->
         val workflowId = requireNotNull(context.workflowId) { ActionErrorCode.HTTP_DOWNLOAD_CONTEXT_MISSING_MSG }

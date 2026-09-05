@@ -41,16 +41,26 @@ class ActionWorkflowCodec(
      * @return 成功、校验失败或解析失败结果。
      */
     fun import(raw: String): ActionWorkflowImportResult {
-        val migrated = runCatching { migrate(json.parseToJsonElement(raw).jsonObject) }
-            .getOrElse { return ActionWorkflowImportResult.Failure(ActionErrorCode.INVALID_JSON, it.message.orEmpty().ifBlank { ActionErrorCode.INVALID_JSON_MSG }) }
+        val migrated = runCatching {
+            migrate(json.parseToJsonElement(raw).jsonObject)
+        }.getOrElse {
+            return ActionWorkflowImportResult.Failure(
+                ActionErrorCode.INVALID_JSON,
+                it.message.orEmpty().ifBlank { ActionErrorCode.INVALID_JSON_MSG },
+            )
+        }
         val workflow = runCatching {
             registry.migrate(json.decodeFromJsonElement(ActionWorkflow.serializer(), migrated))
         }.getOrElse { error ->
-            val message = (error as? SerializationException)?.message.orEmpty().ifBlank { ActionErrorCode.INVALID_WORKFLOW_MSG }
+            val message =
+                (error as? SerializationException)?.message.orEmpty().ifBlank {
+                    ActionErrorCode.INVALID_WORKFLOW_MSG
+                }
             return ActionWorkflowImportResult.Failure(ActionErrorCode.INVALID_WORKFLOW, message)
         }
         val validation = validator.validate(workflow)
-        return if (validation.isValid) ActionWorkflowImportResult.Success(workflow) else ActionWorkflowImportResult.Invalid(workflow, validation)
+        return if (validation.isValid) ActionWorkflowImportResult.Success(workflow)
+        else ActionWorkflowImportResult.Invalid(workflow, validation)
     }
 
     private fun migrate(document: JsonObject): JsonObject {
@@ -68,6 +78,7 @@ class ActionWorkflowCodec(
  */
 sealed interface ActionWorkflowImportResult {
     data class Success(val workflow: ActionWorkflow) : ActionWorkflowImportResult
+
     data class Invalid(
         val workflow: ActionWorkflow,
         val validation: ActionWorkflowValidation,

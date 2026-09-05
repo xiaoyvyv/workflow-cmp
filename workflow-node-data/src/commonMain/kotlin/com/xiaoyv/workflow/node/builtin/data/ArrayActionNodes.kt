@@ -68,12 +68,13 @@ private fun arrayLengthDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayLength,
     ),
     executor = { node, context -> node.valueResult(node.config.string(ActionArrayConfigKey.OUTPUT_KEY), JsonPrimitive(node.values(context).size)) },
 )
 
-private fun arrayCreateDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_CREATE) { it }
+private fun arrayCreateDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_CREATE, DataNodeEditorCatalog.arrayCreate) { it }
 
 private fun arrayAppendDefinition() = ActionNodeDefinition(
     spec = ActionNodeSpec(
@@ -81,7 +82,8 @@ private fun arrayAppendDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayAppend,
     ),
     executor = { node, context ->
         val values = node.values(context).toMutableList()
@@ -98,7 +100,8 @@ private fun arrayRemoveAtDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.INDEX, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.INDEX, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayRemoveAt,
     ),
     executor = { node, context ->
         val values = node.values(context)
@@ -115,7 +118,8 @@ private fun arrayFilterDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OPERATOR, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OPERATOR, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayFilter,
     ),
     executor = { node, context ->
         val path = node.config.string(ActionArrayConfigKey.FIELD_PATH).ifBlank { "$" }
@@ -143,7 +147,8 @@ private fun arrayMapDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayMap,
     ),
     executor = { node, context -> node.arrayResult(JsonArray(node.values(context).map { ActionJsonPath.resolve(it, node.config.string(ActionArrayConfigKey.FIELD_PATH)) })) },
 )
@@ -155,6 +160,7 @@ private fun arrayFlatMapDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayFlatMap,
     ),
     executor = { node, context ->
         val list = node.values(context).flatMap { item ->
@@ -171,7 +177,8 @@ private fun arrayContainsDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayContains,
     ),
     executor = { node, context ->
         node.valueResult(
@@ -187,7 +194,8 @@ private fun arrayFindDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.EXPECTED, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.EXPECTED, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayFind,
     ),
     executor = { node, context ->
         val expected = ActionTemplateResolver.resolveElement(node.config[ActionArrayConfigKey.EXPECTED], context)
@@ -206,6 +214,7 @@ private fun arraySortDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arraySort,
     ),
     executor = { node, context ->
         val path = node.config.string(ActionArrayConfigKey.FIELD_PATH).ifBlank { "$" }
@@ -224,7 +233,8 @@ private fun arraySliceDefinition() = ActionNodeDefinition(
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arraySlice,
     ),
     executor = { node, context ->
         val values = node.values(context)
@@ -235,13 +245,18 @@ private fun arraySliceDefinition() = ActionNodeDefinition(
     },
 )
 
-private fun arrayTransformDefinition(type: String, transform: (JsonArray) -> JsonArray) = ActionNodeDefinition(
+private fun arrayTransformDefinition(
+    type: String,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
+    transform: (JsonArray) -> JsonArray,
+) = ActionNodeDefinition(
     spec = ActionNodeSpec(
         type = type,
         category = ActionNodeCategory.ARRAY,
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY)
+        requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = editor,
     ),
     executor = { node, context -> node.arrayResult(transform(node.values(context))) },
 )
@@ -253,6 +268,7 @@ private fun arrayGroupByDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.FIELD_PATH, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayGroupBy,
     ),
     executor = { node, context ->
         val values = node.values(context)
@@ -270,6 +286,7 @@ private fun arrayReduceDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayReduce,
     ),
     executor = { node, context ->
         val values = node.values(context)
@@ -288,6 +305,7 @@ private fun arrayFirstDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayFirst,
     ),
     executor = { node, context ->
         val first = node.values(context).firstOrNull() ?: JsonNull
@@ -302,6 +320,7 @@ private fun arrayLastDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayLast,
     ),
     executor = { node, context ->
         val last = node.values(context).lastOrNull() ?: JsonNull
@@ -309,15 +328,15 @@ private fun arrayLastDefinition() = ActionNodeDefinition(
     },
 )
 
-private fun arrayConcatDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_CONCAT) { values ->
+private fun arrayConcatDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_CONCAT, DataNodeEditorCatalog.arrayConcat) { values ->
     JsonArray(values.flatMap { element -> (element as? JsonArray)?.toList() ?: error("array.concat 节点 values 必须是数组的数组") })
 }
 
-private fun arrayDistinctDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_DISTINCT) { JsonArray(it.distinct()) }
+private fun arrayDistinctDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_DISTINCT, DataNodeEditorCatalog.arrayDistinct) { JsonArray(it.distinct()) }
 
-private fun arrayReverseDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_REVERSE) { JsonArray(it.reversed()) }
+private fun arrayReverseDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_REVERSE, DataNodeEditorCatalog.arrayReverse) { JsonArray(it.reversed()) }
 
-private fun arrayFlattenDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_FLATTEN) { values ->
+private fun arrayFlattenDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_FLATTEN, DataNodeEditorCatalog.arrayFlatten) { values ->
     JsonArray(values.flatMap { (it as? JsonArray).orEmpty().ifEmpty { listOf(it) } })
 }
 
@@ -328,6 +347,7 @@ private fun arraySumDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arraySum,
     ),
     executor = { node, context ->
         val numbers = extractNumbers(node.values(context), node.config[ActionArrayConfigKey.FIELD_PATH]?.jsonPrimitive?.contentOrNull)
@@ -343,6 +363,7 @@ private fun arrayAvgDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayAvg,
     ),
     executor = { node, context ->
         val numbers = extractNumbers(node.values(context), node.config[ActionArrayConfigKey.FIELD_PATH]?.jsonPrimitive?.contentOrNull)
@@ -358,6 +379,7 @@ private fun arrayMinDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayMin,
     ),
     executor = { node, context ->
         val numbers = extractNumbers(node.values(context), node.config[ActionArrayConfigKey.FIELD_PATH]?.jsonPrimitive?.contentOrNull)
@@ -373,6 +395,7 @@ private fun arrayMaxDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayMax,
     ),
     executor = { node, context ->
         val numbers = extractNumbers(node.values(context), node.config[ActionArrayConfigKey.FIELD_PATH]?.jsonPrimitive?.contentOrNull)
@@ -388,6 +411,7 @@ private fun arrayChunkDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.SIZE, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayChunk,
     ),
     executor = { node, context ->
         val size = node.config[ActionArrayConfigKey.SIZE]?.let { ActionTemplateResolver.resolveElement(it, context).jsonPrimitive.content.toInt() } ?: 1
@@ -397,7 +421,7 @@ private fun arrayChunkDefinition() = ActionNodeDefinition(
     },
 )
 
-private fun arrayShuffleDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_SHUFFLE) { JsonArray(it.shuffled()) }
+private fun arrayShuffleDefinition() = arrayTransformDefinition(ActionNodeType.ARRAY_SHUFFLE, DataNodeEditorCatalog.arrayShuffle) { JsonArray(it.shuffled()) }
 
 private fun arraySampleDefinition() = ActionNodeDefinition(
     spec = ActionNodeSpec(
@@ -406,6 +430,7 @@ private fun arraySampleDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arraySample,
     ),
     executor = { node, context ->
         val count = node.config[ActionArrayConfigKey.COUNT]?.let { ActionTemplateResolver.resolveElement(it, context).jsonPrimitive.content.toInt() } ?: 1
@@ -428,6 +453,7 @@ private fun arrayIndexOfDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayIndexOf,
     ),
     executor = { node, context ->
         val targetValue = ActionTemplateResolver.resolveElement(node.config[ActionArrayConfigKey.VALUE], context)
@@ -443,6 +469,7 @@ private fun arrayIntersectionDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OTHER_VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayIntersection,
     ),
     executor = { node, context ->
         val left = node.values(context).toSet()
@@ -459,6 +486,7 @@ private fun arrayDifferenceDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OTHER_VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayDifference,
     ),
     executor = { node, context ->
         val left = node.values(context).toList()
@@ -475,6 +503,7 @@ private fun arrayInsertAtDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.INDEX, ActionArrayConfigKey.VALUE, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayInsertAt,
     ),
     executor = { node, context ->
         val list = node.values(context).toMutableList()
@@ -493,6 +522,7 @@ private fun arrayZipDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.OTHER_VALUES, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayZip,
     ),
     executor = { node, context ->
         val left = node.values(context)
@@ -509,6 +539,7 @@ private fun arrayTakeDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.COUNT, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayTake,
     ),
     executor = { node, context ->
         val list = node.values(context)
@@ -524,6 +555,7 @@ private fun arrayDropDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort),
         requiredConfigKeys = setOf(ActionArrayConfigKey.VALUES, ActionArrayConfigKey.COUNT, ActionArrayConfigKey.OUTPUT_KEY),
+        editor = DataNodeEditorCatalog.arrayDrop,
     ),
     executor = { node, context ->
         val list = node.values(context)

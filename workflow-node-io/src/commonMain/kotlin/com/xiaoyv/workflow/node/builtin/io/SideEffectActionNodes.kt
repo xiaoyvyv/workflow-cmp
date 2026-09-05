@@ -29,6 +29,7 @@ import com.xiaoyv.workflow.node.builtin.inPort
 import com.xiaoyv.workflow.node.builtin.successPort
 import com.xiaoyv.workflow.node.core.ActionNodeCategory
 import com.xiaoyv.workflow.node.core.ActionNodeDefinition
+import com.xiaoyv.workflow.node.core.ActionNodeEditorSpec
 import com.xiaoyv.workflow.node.core.ActionNodeSpec
 import com.xiaoyv.workflow.node.core.string
 import com.xiaoyv.workflow.node.effect.ActionConfirmEffect
@@ -89,7 +90,8 @@ private fun openExternalUrlDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.OPEN_EXTERNAL_URL,
         requiredConfigKey = ActionOpenUrlConfigKey.URL,
-        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_URL)
+        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_URL),
+        editor = IoNodeEditorCatalog.openExternalUrl,
     ) { config, context ->
         ActionOpenExternalUrlEffect(url = ActionTemplateResolver.resolveText(config.string(ActionOpenUrlConfigKey.URL), context).also(ActionUrlPolicy::requireHttpUrl))
     }
@@ -98,7 +100,8 @@ private fun openExternalAppDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.OPEN_EXTERNAL_APP,
         requiredConfigKey = ActionOpenAppConfigKey.URI,
-        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_APP)
+        capabilities = setOf(ActionCapability.OPEN_EXTERNAL_APP),
+        editor = IoNodeEditorCatalog.openExternalApp,
     ) { config, context ->
         val uri = ActionTemplateResolver.resolveText(config.string(ActionOpenAppConfigKey.URI), context)
         val fallbackUrl = config[ActionOpenAppConfigKey.FALLBACK_URL]?.jsonPrimitive?.contentOrNull?.let { ActionTemplateResolver.resolveText(it, context) }
@@ -111,7 +114,8 @@ private fun openInternalWebDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.OPEN_INTERNAL_WEB,
         requiredConfigKey = ActionOpenWebConfigKey.URL,
-        capabilities = setOf(ActionCapability.OPEN_INTERNAL_WEB)
+        capabilities = setOf(ActionCapability.OPEN_INTERNAL_WEB),
+        editor = IoNodeEditorCatalog.openInternalWeb,
     ) { config, context ->
         val headersElement = config[ActionOpenWebConfigKey.HEADERS]?.let { ActionTemplateResolver.resolveElement(it, context) } as? JsonObject
         val headers = headersElement?.entries?.associate { (k, v) ->
@@ -126,7 +130,12 @@ private fun openInternalWebDefinition() =
         )
     }
 
-private fun showToastDefinition() = sideEffectDefinition(ActionNodeType.SHOW_TOAST, ActionToastConfigKey.MESSAGE, emptySet()) { config, context ->
+private fun showToastDefinition() = sideEffectDefinition(
+    type = ActionNodeType.SHOW_TOAST,
+    requiredConfigKey = ActionToastConfigKey.MESSAGE,
+    capabilities = emptySet(),
+    editor = IoNodeEditorCatalog.showToast,
+) { config, context ->
     ActionShowToastEffect(ActionTemplateResolver.resolveText(config.string(ActionToastConfigKey.MESSAGE), context))
 }
 
@@ -134,7 +143,8 @@ private fun writeClipboardDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.WRITE_CLIPBOARD,
         requiredConfigKey = ActionClipboardConfigKey.TEXT,
-        capabilities = setOf(ActionCapability.CLIPBOARD_WRITE)
+        capabilities = setOf(ActionCapability.CLIPBOARD_WRITE),
+        editor = IoNodeEditorCatalog.writeClipboard,
     ) { config, context ->
         ActionWriteClipboardEffect(ActionTemplateResolver.resolveText(config.string(ActionClipboardConfigKey.TEXT), context))
     }
@@ -143,7 +153,8 @@ private fun confirmDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.UI_CONFIRM,
         requiredConfigKey = ActionConfirmConfigKey.MESSAGE,
-        capabilities = setOf(ActionCapability.CONFIRM_DIALOG)
+        capabilities = setOf(ActionCapability.CONFIRM_DIALOG),
+        editor = IoNodeEditorCatalog.confirm,
     ) { config, context ->
         ActionConfirmEffect(
             title = config[ActionConfirmConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
@@ -157,7 +168,8 @@ private fun shareDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.SYSTEM_SHARE,
         requiredConfigKey = ActionShareConfigKey.TEXT,
-        capabilities = setOf(ActionCapability.SHARE)
+        capabilities = setOf(ActionCapability.SHARE),
+        editor = IoNodeEditorCatalog.share,
     ) { config, context ->
         ActionShareEffect(
             title = config[ActionShareConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
@@ -170,7 +182,8 @@ private fun notificationDefinition() =
     sideEffectDefinition(
         type = ActionNodeType.SYSTEM_NOTIFICATION,
         requiredConfigKey = ActionNotificationConfigKey.CONTENT,
-        capabilities = setOf(ActionCapability.NOTIFICATION)
+        capabilities = setOf(ActionCapability.NOTIFICATION),
+        editor = IoNodeEditorCatalog.notification,
     ) { config, context ->
         ActionNotificationEffect(
             title = config[ActionNotificationConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty(),
@@ -185,6 +198,7 @@ private fun readClipboardDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = setOf(ActionClipboardConfigKey.OUTPUT_KEY),
+        editor = IoNodeEditorCatalog.readClipboard,
     ),
     executor = { node, context ->
         val outputKey = node.config.string(ActionClipboardConfigKey.OUTPUT_KEY)
@@ -204,6 +218,7 @@ private fun vibrateDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = emptySet(),
+        editor = IoNodeEditorCatalog.vibrate,
     ),
     executor = { _, _ ->
         ActionNodeExecutionResult(
@@ -221,6 +236,7 @@ private fun inputDialogDefinition() = ActionNodeDefinition(
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = setOf(ActionInputDialogConfigKey.OUTPUT_KEY),
         requiredCapabilities = setOf(ActionCapability.INPUT_DIALOG),
+        editor = IoNodeEditorCatalog.inputDialog,
     ),
     executor = { node, context ->
         val outputKey = node.config.string(ActionInputDialogConfigKey.OUTPUT_KEY)
@@ -339,6 +355,7 @@ private fun progressDialogDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(successPort, failurePort),
         requiredCapabilities = setOf(ActionCapability.PROGRESS_DIALOG),
+        editor = IoNodeEditorCatalog.progressDialog,
     ),
     executor = { node, context ->
         buildProgressDialogResult(ActionProgressDialogAction.SHOW, node, context)
@@ -352,6 +369,7 @@ private fun progressUpdateDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(successPort, failurePort),
         requiredCapabilities = setOf(ActionCapability.PROGRESS_DIALOG),
+        editor = IoNodeEditorCatalog.progressUpdate,
     ),
     executor = { node, context ->
         buildProgressDialogResult(ActionProgressDialogAction.UPDATE, node, context)
@@ -365,6 +383,7 @@ private fun progressDismissDefinition() = ActionNodeDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(successPort, failurePort),
         requiredCapabilities = setOf(ActionCapability.PROGRESS_DIALOG),
+        editor = IoNodeEditorCatalog.progressDismiss,
     ),
     executor = { node, context ->
         buildProgressDialogResult(ActionProgressDialogAction.DISMISS, node, context)
@@ -388,6 +407,7 @@ private fun selectDialogDefinition() = ActionNodeDefinition(
         outputPorts = persistentListOf(successPort, failurePort),
         requiredConfigKeys = setOf(ActionSelectDialogConfigKey.OUTPUT_KEY, ActionSelectDialogConfigKey.OPTIONS),
         requiredCapabilities = setOf(ActionCapability.SELECT_DIALOG),
+        editor = IoNodeEditorCatalog.selectDialog,
     ),
     executor = { node, context ->
         val outputKey = node.config.string(ActionSelectDialogConfigKey.OUTPUT_KEY)
@@ -471,9 +491,10 @@ private fun parseDefaultIndices(element: JsonElement?): List<Int> {
 
 private fun imagePreviewDefinition() =
     sideEffectDefinition(
-        ActionNodeType.IMAGE_PREVIEW,
-        ActionImagePreviewConfigKey.IMAGES,
-        setOf(ActionCapability.IMAGE_PREVIEW),
+        type = ActionNodeType.IMAGE_PREVIEW,
+        requiredConfigKey = ActionImagePreviewConfigKey.IMAGES,
+        capabilities = setOf(ActionCapability.IMAGE_PREVIEW),
+        editor = IoNodeEditorCatalog.imagePreview,
     ) { config, context ->
         val resolvedIndex = ActionTemplateResolver.resolveElement(config[ActionImagePreviewConfigKey.INDEX], context)
         val index = (resolvedIndex as? JsonPrimitive)?.intOrNull
@@ -498,6 +519,7 @@ private fun videoPreviewDefinition() =
         type = ActionNodeType.VIDEO_PREVIEW,
         requiredConfigKey = ActionVideoPreviewConfigKey.URL,
         capabilities = setOf(ActionCapability.VIDEO_PREVIEW),
+        editor = IoNodeEditorCatalog.videoPreview,
     ) { config, context ->
         val url = ActionTemplateResolver.resolveText(config.string(ActionVideoPreviewConfigKey.URL), context)
         require(url.isNotBlank()) { "视频 URL 不能为空" }
@@ -515,6 +537,7 @@ private fun syncCookieDefinition() =
         type = ActionNodeType.SYNC_COOKIE,
         requiredConfigKey = ActionSyncCookieConfigKey.URL,
         capabilities = setOf(ActionCapability.NETWORK_COOKIE_SYNC),
+        editor = IoNodeEditorCatalog.syncCookie,
     ) { config, context ->
         val url = ActionTemplateResolver.resolveText(config.string(ActionSyncCookieConfigKey.URL), context).also(ActionUrlPolicy::requireHttpUrl)
         val title = config[ActionSyncCookieConfigKey.TITLE]?.let { ActionTemplateResolver.resolveText(it.jsonPrimitive.content, context) }.orEmpty()
@@ -539,6 +562,7 @@ private fun sideEffectDefinition(
     type: String,
     requiredConfigKey: String,
     capabilities: Set<String>,
+    editor: ActionNodeEditorSpec,
     create: (JsonObject, ActionExecutionContext) -> ActionSideEffect,
 ): ActionNodeDefinition {
     return ActionNodeDefinition(
@@ -549,6 +573,7 @@ private fun sideEffectDefinition(
             outputPorts = persistentListOf(successPort, failurePort),
             requiredConfigKeys = setOf(requiredConfigKey),
             requiredCapabilities = capabilities,
+            editor = editor,
         ),
         executor = { node, context ->
             ActionNodeExecutionResult(outputPortId = ActionControlPortId.SUCCESS, sideEffect = create(node.config, context))

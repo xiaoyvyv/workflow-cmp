@@ -22,97 +22,164 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-val urlActionNodeDefinitions: List<ActionNodeDefinition> = listOf(
-    urlParseDefinition(),
-    urlBuildDefinition(),
-    urlSetQueryParamDefinition(),
-    urlGetQueryParamDefinition(),
-)
+val urlActionNodeDefinitions: List<ActionNodeDefinition> =
+    listOf(
+        urlParseDefinition(),
+        urlBuildDefinition(),
+        urlSetQueryParamDefinition(),
+        urlGetQueryParamDefinition(),
+    )
 
-private fun urlParseDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.URL_PARSE,
-        category = ActionNodeCategory.URL,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionUrlConfigKey.URL, ActionUrlConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val urlStr = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.URL), context)
-        val url = Url(urlStr)
-        val queryParams = JsonObject(url.parameters.entries().associate { (key, values) ->
-            key to if (values.size == 1) JsonPrimitive(values.first()) else JsonArray(values.map { JsonPrimitive(it) })
-        })
-        val parsed = JsonObject(
-            mapOf(
-                ActionUrlParsedKey.PROTOCOL to JsonPrimitive(url.protocol.name),
-                ActionUrlParsedKey.HOST to JsonPrimitive(url.host),
-                ActionUrlParsedKey.PORT to JsonPrimitive(url.port),
-                ActionUrlParsedKey.PATH to JsonPrimitive(url.encodedPath),
-                ActionUrlParsedKey.FULL_URL to JsonPrimitive(url.toString()),
-                ActionUrlParsedKey.QUERY_PARAMETERS to queryParams,
-            )
-        )
-        node.valueResult(node.config.string(ActionUrlConfigKey.OUTPUT_KEY), parsed)
-    },
-)
+private fun urlParseDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.URL_PARSE,
+                category = ActionNodeCategory.URL,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys = setOf(ActionUrlConfigKey.URL, ActionUrlConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.urlParse,
+            ),
+        executor = { node, context ->
+            val urlStr =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.URL),
+                    context,
+                )
+            val url = Url(urlStr)
+            val queryParams =
+                JsonObject(
+                    url.parameters.entries().associate { (key, values) ->
+                        key to
+                                if (values.size == 1) JsonPrimitive(values.first())
+                                else JsonArray(values.map { JsonPrimitive(it) })
+                    }
+                )
+            val parsed =
+                JsonObject(
+                    mapOf(
+                        ActionUrlParsedKey.PROTOCOL to JsonPrimitive(url.protocol.name),
+                        ActionUrlParsedKey.HOST to JsonPrimitive(url.host),
+                        ActionUrlParsedKey.PORT to JsonPrimitive(url.port),
+                        ActionUrlParsedKey.PATH to JsonPrimitive(url.encodedPath),
+                        ActionUrlParsedKey.FULL_URL to JsonPrimitive(url.toString()),
+                        ActionUrlParsedKey.QUERY_PARAMETERS to queryParams,
+                    )
+                )
+            node.valueResult(node.config.string(ActionUrlConfigKey.OUTPUT_KEY), parsed)
+        },
+    )
 
-private fun urlBuildDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.URL_BUILD,
-        category = ActionNodeCategory.URL,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionUrlConfigKey.BASE_URL, ActionUrlConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val baseUrlStr = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.BASE_URL), context)
-        val builder = URLBuilder().takeFrom(baseUrlStr)
-        node.config[ActionUrlConfigKey.QUERY_PARAMETERS]?.let { queryEl ->
-            val resolvedObj = ActionTemplateResolver.resolveElement(queryEl, context).jsonObject
-            resolvedObj.forEach { (k, v) ->
-                builder.parameters.append(k, v.jsonPrimitive.content)
+private fun urlBuildDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.URL_BUILD,
+                category = ActionNodeCategory.URL,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(ActionUrlConfigKey.BASE_URL, ActionUrlConfigKey.OUTPUT_KEY),
+                editor = CodecNodeEditorCatalog.urlBuild,
+            ),
+        executor = { node, context ->
+            val baseUrlStr =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.BASE_URL),
+                    context,
+                )
+            val builder = URLBuilder().takeFrom(baseUrlStr)
+            node.config[ActionUrlConfigKey.QUERY_PARAMETERS]?.let { queryEl ->
+                val resolvedObj = ActionTemplateResolver.resolveElement(queryEl, context).jsonObject
+                resolvedObj.forEach { (k, v) ->
+                    builder.parameters.append(k, v.jsonPrimitive.content)
+                }
             }
-        }
-        node.valueResult(node.config.string(ActionUrlConfigKey.OUTPUT_KEY), JsonPrimitive(builder.buildString()))
-    },
-)
+            node.valueResult(
+                node.config.string(ActionUrlConfigKey.OUTPUT_KEY),
+                JsonPrimitive(builder.buildString()),
+            )
+        },
+    )
 
-private fun urlSetQueryParamDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.URL_SET_QUERY_PARAM,
-        category = ActionNodeCategory.URL,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionUrlConfigKey.URL, ActionUrlConfigKey.KEY, ActionUrlConfigKey.VALUE, ActionUrlConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val urlStr = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.URL), context)
-        val key = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.KEY), context)
-        val value = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.VALUE), context)
-        val builder = URLBuilder().takeFrom(urlStr)
-        builder.parameters.remove(key)
-        if (value.isNotEmpty()) {
-            builder.parameters.append(key, value)
-        }
-        node.valueResult(node.config.string(ActionUrlConfigKey.OUTPUT_KEY), JsonPrimitive(builder.buildString()))
-    },
-)
+private fun urlSetQueryParamDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.URL_SET_QUERY_PARAM,
+                category = ActionNodeCategory.URL,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(
+                        ActionUrlConfigKey.URL,
+                        ActionUrlConfigKey.KEY,
+                        ActionUrlConfigKey.VALUE,
+                        ActionUrlConfigKey.OUTPUT_KEY,
+                    ),
+                editor = CodecNodeEditorCatalog.urlSetQueryParam,
+            ),
+        executor = { node, context ->
+            val urlStr =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.URL),
+                    context,
+                )
+            val key =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.KEY),
+                    context,
+                )
+            val value =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.VALUE),
+                    context,
+                )
+            val builder = URLBuilder().takeFrom(urlStr)
+            builder.parameters.remove(key)
+            if (value.isNotEmpty()) {
+                builder.parameters.append(key, value)
+            }
+            node.valueResult(
+                node.config.string(ActionUrlConfigKey.OUTPUT_KEY),
+                JsonPrimitive(builder.buildString()),
+            )
+        },
+    )
 
-private fun urlGetQueryParamDefinition() = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = ActionNodeType.URL_GET_QUERY_PARAM,
-        category = ActionNodeCategory.URL,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(nextPort),
-        requiredConfigKeys = setOf(ActionUrlConfigKey.URL, ActionUrlConfigKey.KEY, ActionUrlConfigKey.OUTPUT_KEY),
-    ),
-    executor = { node, context ->
-        val urlStr = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.URL), context)
-        val key = ActionTemplateResolver.resolveText(node.config.string(ActionUrlConfigKey.KEY), context)
-        val url = Url(urlStr)
-        val value = url.parameters[key]
-        node.valueResult(node.config.string(ActionUrlConfigKey.OUTPUT_KEY), value?.let { JsonPrimitive(it) } ?: JsonNull)
-    },
-)
-
+private fun urlGetQueryParamDefinition() =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = ActionNodeType.URL_GET_QUERY_PARAM,
+                category = ActionNodeCategory.URL,
+                inputPorts = persistentListOf(inPort),
+                outputPorts = persistentListOf(nextPort),
+                requiredConfigKeys =
+                    setOf(
+                        ActionUrlConfigKey.URL,
+                        ActionUrlConfigKey.KEY,
+                        ActionUrlConfigKey.OUTPUT_KEY,
+                    ),
+                editor = CodecNodeEditorCatalog.urlGetQueryParam,
+            ),
+        executor = { node, context ->
+            val urlStr =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.URL),
+                    context,
+                )
+            val key =
+                ActionTemplateResolver.resolveText(
+                    node.config.string(ActionUrlConfigKey.KEY),
+                    context,
+                )
+            val url = Url(urlStr)
+            val value = url.parameters[key]
+            node.valueResult(
+                node.config.string(ActionUrlConfigKey.OUTPUT_KEY),
+                value?.let { JsonPrimitive(it) } ?: JsonNull,
+            )
+        },
+    )

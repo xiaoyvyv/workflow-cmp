@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Workflow Editor</title>
+    <link href="./style.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="toolbar">
+    <strong>Workflow Editor</strong>
+    <input id="device" placeholder="设备地址，例如 http://127.0.0.1:8080"/>
+    <input id="token" placeholder="可选设备 token" type="password"/>
+    <button id="connect">连接设备</button>
+    <button id="load">读取</button>
+    <button id="save">保存</button>
+    <button id="validate">设备校验</button>
+    <button id="run">运行</button>
+    <span class="toolbar-separator"></span>
+    <button id="manifest">导入 Manifest</button>
+    <button id="workflow">导入工作流</button>
+    <button id="export">导出工作流</button>
+    <input hidden id="file" type="file"/>
+</header>
+<main>
+    <aside class="palette-panel">
+        <h3>节点</h3>
+        <p class="hint" id="palette-hint"></p>
+        <input id="search" placeholder="筛选节点"/>
+        <div id="palette"></div>
+    </aside>
+    <section aria-label="工作流画布" id="canvas">
+        <svg id="edges"></svg>
+        <div id="nodes"></div>
+    </section>
+    <aside class="inspector-panel">
+        <h3 id="title">配置</h3>
+        <div id="inspector">选择一个节点</div>
+        <div class="node-actions">
+            <button id="set-entry">设为入口</button>
+            <button id="set-error">设为全局错误节点</button>
+        </div>
+        <h3>设备事件</h3>
+        <pre id="events">尚未连接设备</pre>
+    </aside>
+</main>
+<script src="./app.js"></script>
+</body>
+</html>

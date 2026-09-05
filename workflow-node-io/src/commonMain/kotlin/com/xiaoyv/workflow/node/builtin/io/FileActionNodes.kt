@@ -9,6 +9,7 @@ import com.xiaoyv.workflow.node.builtin.nextPort
 import com.xiaoyv.workflow.node.builtin.valueResult
 import com.xiaoyv.workflow.node.core.ActionNodeCategory
 import com.xiaoyv.workflow.node.core.ActionNodeDefinition
+import com.xiaoyv.workflow.node.core.ActionNodeEditorSpec
 import com.xiaoyv.workflow.node.core.ActionNodeSpec
 import com.xiaoyv.workflow.node.core.string
 import com.xiaoyv.workflow.node.resolver.ActionTemplateResolver
@@ -43,6 +44,7 @@ fun fileActionNodeDefinitions(
 private fun fileReadTextDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_READ_TEXT,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileReadText,
 ) { node, context, workflowId ->
     node.valueResult(
         node.config.string(ActionFileConfigKey.OUTPUT_KEY),
@@ -53,6 +55,7 @@ private fun fileReadTextDefinition(fileStorage: ActionWorkflowFileStorage) = fil
 private fun fileWriteTextDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_WRITE_TEXT,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.TEXT, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileWriteText,
 ) { node, context, workflowId ->
     fileStorage.writeText(
         workflowId = workflowId,
@@ -66,6 +69,7 @@ private fun fileWriteTextDefinition(fileStorage: ActionWorkflowFileStorage) = fi
 private fun fileCreateDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_CREATE,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileCreate,
 ) { node, context, workflowId ->
     fileStorage.createFile(workflowId, text(node, ActionFileConfigKey.PATH, context))
     node.valueResult(node.config.string(ActionFileConfigKey.OUTPUT_KEY), JsonPrimitive(true))
@@ -74,6 +78,7 @@ private fun fileCreateDefinition(fileStorage: ActionWorkflowFileStorage) = fileD
 private fun fileGetWorkingDirectoryDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_GET_WORKING_DIRECTORY,
     requiredConfigKeys = setOf(ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileGetWorkingDirectory,
 ) { node, _, workflowId ->
     node.valueResult(
         node.config.string(ActionFileConfigKey.OUTPUT_KEY),
@@ -84,6 +89,7 @@ private fun fileGetWorkingDirectoryDefinition(fileStorage: ActionWorkflowFileSto
 private fun fileDeleteDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_DELETE,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileDelete,
 ) { node, context, workflowId ->
     fileStorage.delete(
         workflowId = workflowId,
@@ -95,6 +101,7 @@ private fun fileDeleteDefinition(fileStorage: ActionWorkflowFileStorage) = fileD
 private fun fileExistsDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_EXISTS,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileExists,
 ) { node, context, workflowId ->
     node.valueResult(
         node.config.string(ActionFileConfigKey.OUTPUT_KEY),
@@ -105,6 +112,7 @@ private fun fileExistsDefinition(fileStorage: ActionWorkflowFileStorage) = fileD
 private fun fileMkdirDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_MKDIR,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileMkdir,
 ) { node, context, workflowId ->
     fileStorage.mkdir(
         workflowId = workflowId,
@@ -116,6 +124,7 @@ private fun fileMkdirDefinition(fileStorage: ActionWorkflowFileStorage) = fileDe
 private fun fileListDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_LIST,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileList,
 ) { node, context, workflowId ->
     val files = fileStorage.list(
         workflowId = workflowId,
@@ -127,6 +136,7 @@ private fun fileListDefinition(fileStorage: ActionWorkflowFileStorage) = fileDef
 private fun fileCopyDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_COPY,
     requiredConfigKeys = setOf(ActionFileConfigKey.FROM_PATH, ActionFileConfigKey.TO_PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileCopy,
 ) { node, context, workflowId ->
     fileStorage.copy(
         workflowId = workflowId,
@@ -139,6 +149,7 @@ private fun fileCopyDefinition(fileStorage: ActionWorkflowFileStorage) = fileDef
 private fun fileMoveDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_MOVE,
     requiredConfigKeys = setOf(ActionFileConfigKey.FROM_PATH, ActionFileConfigKey.TO_PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileMove,
 ) { node, context, workflowId ->
     fileStorage.move(
         workflowId = workflowId,
@@ -151,6 +162,7 @@ private fun fileMoveDefinition(fileStorage: ActionWorkflowFileStorage) = fileDef
 private fun fileCompressZipDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_COMPRESS_ZIP,
     requiredConfigKeys = setOf(ActionFileConfigKey.PATHS, ActionFileConfigKey.TO_PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileCompressZip,
 ) { node, context, workflowId ->
     fileStorage.compressZip(
         workflowId = workflowId,
@@ -163,6 +175,7 @@ private fun fileCompressZipDefinition(fileStorage: ActionWorkflowFileStorage) = 
 private fun fileExtractZipDefinition(fileStorage: ActionWorkflowFileStorage) = fileDefinition(
     type = ActionNodeType.FILE_EXTRACT_ZIP,
     requiredConfigKeys = setOf(ActionFileConfigKey.FROM_PATH, ActionFileConfigKey.TO_PATH, ActionFileConfigKey.OUTPUT_KEY),
+    editor = IoNodeEditorCatalog.fileExtractZip,
 ) { node, context, workflowId ->
     fileStorage.extractZip(
         workflowId = workflowId,
@@ -175,6 +188,7 @@ private fun fileExtractZipDefinition(fileStorage: ActionWorkflowFileStorage) = f
 private fun fileDefinition(
     type: String,
     requiredConfigKeys: Set<String>,
+    editor: ActionNodeEditorSpec,
     execute: suspend (com.xiaoyv.workflow.model.definition.ActionNode, com.xiaoyv.workflow.model.execution.ActionExecutionContext, String) -> com.xiaoyv.workflow.model.execution.ActionNodeExecutionResult,
 ) = ActionNodeDefinition(
     spec = ActionNodeSpec(
@@ -183,6 +197,7 @@ private fun fileDefinition(
         inputPorts = persistentListOf(inPort),
         outputPorts = persistentListOf(nextPort, failurePort),
         requiredConfigKeys = requiredConfigKeys,
+        editor = editor,
     ),
     executor = { node, context ->
         execute(node, context, requireNotNull(context.workflowId) { ActionErrorCode.FILE_CONTEXT_MISSING_MSG })

@@ -1,6 +1,9 @@
 package com.xiaoyv.workflow.demo
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xiaoyv.workflow.demo.business.WorkflowSamples
@@ -15,6 +18,9 @@ import com.xiaoyv.workflow.demo.business.samples.FlowSamples
 import com.xiaoyv.workflow.demo.business.samples.HtmlSamples
 import com.xiaoyv.workflow.demo.business.samples.IoSamples
 import com.xiaoyv.workflow.demo.support.debugLog
+import com.xiaoyv.workflow.di.WorkflowRuntime
+import com.xiaoyv.workflow.di.WorkflowRuntimeConfig
+import com.xiaoyv.workflow.di.createWorkflowRuntime
 import com.xiaoyv.workflow.engine.ActionSideEffectDispatcher
 import com.xiaoyv.workflow.engine.ActionSideEffectResult
 import com.xiaoyv.workflow.engine.runtime.ActionWorkflowEngine
@@ -37,6 +43,13 @@ import com.xiaoyv.workflow.node.effect.ActionShowToastEffect
 import com.xiaoyv.workflow.node.effect.ActionSyncCookieEffect
 import com.xiaoyv.workflow.node.effect.ActionVideoPreviewEffect
 import com.xiaoyv.workflow.node.effect.ActionWriteClipboardEffect
+import com.xiaoyv.workflow.platform.room.cookie.RoomActionCookiesStorage
+import com.xiaoyv.workflow.port.impl.DefaultActionHttpRequestExecutor
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.LoggingFormat
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,8 +138,11 @@ sealed interface WorkflowsSideEffect {
  * 轻量级、无三方依赖的 MVI ViewModel。
  */
 class WorkflowsViewModel(
-    private val engine: ActionWorkflowEngine,
+    val runtime: WorkflowRuntime,
+    private val httpClient: HttpClient? = null,
 ) : ViewModel() {
+
+    private val engine: ActionWorkflowEngine = runtime.engine
 
     private val activeSideEffectDispatcher = ActionSideEffectDispatcher()
 
@@ -135,6 +151,14 @@ class WorkflowsViewModel(
 
     private val _uiEffect = Channel<WorkflowsSideEffect>(Channel.UNLIMITED)
     val uiEffect: Flow<WorkflowsSideEffect> = _uiEffect.receiveAsFlow()
+
+    fun close() {
+        httpClient?.close()
+    }
+
+    override fun onCleared() {
+        close()
+    }
 
     private fun emitUiEffect(effect: WorkflowsSideEffect) {
         _uiEffect.trySend(effect)
@@ -278,4 +302,48 @@ class WorkflowsViewModel(
         is ActionSelectDialogEffect -> "选择弹窗 \"${effect.title}\""
         else -> effect::class.simpleName.orEmpty()
     }
+}
+
+/**
+ * 创建桌面与移动端示例共用的 ViewModel 和真实工作流运行时。
+ */
+fun createWorkflowsViewModel(): WorkflowsViewModel {
+    val cookiesStorage = RoomActionCookiesStorage()
+    val httpClient =
+        HttpClient {
+            install(HttpCookies) {
+                storage = cookiesStorage
+            }
+            install(Logging) {
+                level = LogLevel.ALL
+                format = LoggingFormat.OkHttp
+                logger = object : io.ktor.client.plugins.logging.Logger {
+                    override fun log(message: String) {
+                        println("[Network] $message")
+                    }
+                }
+            }
+        }
+    val runtime =
+        createWorkflowRuntime(
+            config =
+                WorkflowRuntimeConfig(
+                    httpRequestExecutor = DefaultActionHttpRequestExecutor(httpClient),
+                ),
+        )
+    return WorkflowsViewModel(runtime, httpClient)
+}
+
+/**
+ * 在组合生命周期内创建并释放应用唯一的工作流 ViewModel。
+ */
+@Composable
+fun rememberWorkflowsViewModel(): WorkflowsViewModel {
+    val viewModel = remember { createWorkflowsViewModel() }
+
+    DisposableEffect(viewModel) {
+        onDispose { viewModel.close() }
+    }
+
+    return viewModel
 }

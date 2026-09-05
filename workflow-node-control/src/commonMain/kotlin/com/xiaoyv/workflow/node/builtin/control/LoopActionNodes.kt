@@ -30,34 +30,71 @@ val loopActionNodeDefinitions: List<ActionNodeDefinition> = listOf(
     loopBreakDefinition(),
 )
 
-private fun loopRepeatDefinition() = loopDefinition(ActionNodeType.LOOP_REPEAT, setOf(ActionLoopConfigKey.COUNT, ActionLoopConfigKey.MAX_ITERATIONS))
-private fun loopForEachDefinition() = loopDefinition(ActionNodeType.LOOP_FOR_EACH, setOf(ActionLoopConfigKey.ITEMS))
-private fun loopWhileDefinition() = loopDefinition(ActionNodeType.LOOP_WHILE, setOf(ActionLoopConfigKey.CONDITION, ActionLoopConfigKey.MAX_ITERATIONS))
-private fun loopNextDefinition() = controlDefinition(ActionNodeType.LOOP_NEXT)
-private fun loopContinueDefinition() = controlDefinition(ActionNodeType.LOOP_CONTINUE)
-private fun loopBreakDefinition() = controlDefinition(ActionNodeType.LOOP_BREAK)
+private fun loopRepeatDefinition() =
+    loopDefinition(
+        ActionNodeType.LOOP_REPEAT,
+        setOf(ActionLoopConfigKey.COUNT, ActionLoopConfigKey.MAX_ITERATIONS),
+        ControlNodeEditorCatalog.loopRepeat,
+    )
 
-private fun loopDefinition(type: String, requiredConfigKeys: Set<String>): ActionNodeDefinition = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = type,
-        category = ActionNodeCategory.LOOP,
-        inputPorts = persistentListOf(inPort),
-        outputPorts = persistentListOf(
-            bodyPort,
-            completedPort,
-            failurePort,
-        ),
-        requiredConfigKeys = requiredConfigKeys,
-    ),
-    executor = { _, _ -> ActionNodeExecutionResult(outputPortId = ActionControlPortId.BODY) },
-)
+private fun loopForEachDefinition() =
+    loopDefinition(
+        ActionNodeType.LOOP_FOR_EACH,
+        setOf(ActionLoopConfigKey.ITEMS),
+        ControlNodeEditorCatalog.loopForEach,
+    )
 
-private fun controlDefinition(type: String): ActionNodeDefinition = ActionNodeDefinition(
-    spec = ActionNodeSpec(
-        type = type,
-        category = ActionNodeCategory.LOOP,
-        inputPorts = persistentListOf(loopControlInPort),
-        requiredConfigKeys = setOf(ActionLoopConfigKey.LOOP_ID),
-    ),
-    executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "") },
-)
+private fun loopWhileDefinition() =
+    loopDefinition(
+        ActionNodeType.LOOP_WHILE,
+        setOf(ActionLoopConfigKey.CONDITION, ActionLoopConfigKey.MAX_ITERATIONS),
+        ControlNodeEditorCatalog.loopWhile,
+    )
+
+private fun loopNextDefinition() =
+    controlDefinition(ActionNodeType.LOOP_NEXT, ControlNodeEditorCatalog.loopNext)
+
+private fun loopContinueDefinition() =
+    controlDefinition(ActionNodeType.LOOP_CONTINUE, ControlNodeEditorCatalog.loopContinue)
+
+private fun loopBreakDefinition() =
+    controlDefinition(ActionNodeType.LOOP_BREAK, ControlNodeEditorCatalog.loopBreak)
+
+private fun loopDefinition(
+    type: String,
+    requiredConfigKeys: Set<String>,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
+): ActionNodeDefinition =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = type,
+                category = ActionNodeCategory.LOOP,
+                inputPorts = persistentListOf(inPort),
+                outputPorts =
+                    persistentListOf(
+                        bodyPort,
+                        completedPort,
+                        failurePort,
+                    ),
+                requiredConfigKeys = requiredConfigKeys,
+                editor = editor,
+            ),
+        executor = { _, _ -> ActionNodeExecutionResult(outputPortId = ActionControlPortId.BODY) },
+    )
+
+private fun controlDefinition(
+    type: String,
+    editor: com.xiaoyv.workflow.node.core.ActionNodeEditorSpec,
+): ActionNodeDefinition =
+    ActionNodeDefinition(
+        spec =
+            ActionNodeSpec(
+                type = type,
+                category = ActionNodeCategory.LOOP,
+                inputPorts = persistentListOf(loopControlInPort),
+                requiredConfigKeys = setOf(ActionLoopConfigKey.LOOP_ID),
+                editor = editor,
+            ),
+        executor = { _, _ -> ActionNodeExecutionResult(outputPortId = "") },
+    )

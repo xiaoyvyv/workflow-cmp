@@ -9,9 +9,18 @@ plugins {
 
 dependencies {
     implementation(projects.shared)
+    implementation(projects.workflowCore)
+    implementation(projects.workflowEditorBridgeContract)
+    implementation(projects.workflowEditorBridgeJvm)
+    implementation(projects.workflowNodeAll)
 
     implementation(compose.desktop.currentOs)
+    implementation(libs.compose.lifecycle.viewmodel)
+    implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutinesSwing)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
 
     implementation(libs.compose.ui.tooling.preview)
 }
