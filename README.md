@@ -109,14 +109,14 @@
   </tr>
   <tr>
     <td width="50%" align="center" valign="top">
-      <img src="docs/screenshot/editor-3.png" alt="执行控制台与实时事件流" width="100%" />
+      <img src="docs/screenshot/editor-3.png" alt="智能拓扑自动排版与多维布局" width="100%" />
       <br />
-      <sub><b>图 3：执行控制台与实时事件流</b><br />WebSocket 实时通道、执行进度高亮追踪与结构化调试日志</sub>
+      <sub><b>图 3：智能拓扑自动排版与多维布局</b><br />内置 Sugiyama 拓扑分层算法，支持垂直/水平多向一键规整</sub>
     </td>
     <td width="50%" align="center" valign="top">
-      <img src="docs/screenshot/editor-4.png" alt="智能拓扑自动排版与多维布局" width="100%" />
+      <img src="docs/screenshot/editor-4.png" alt="执行控制台与异常节点溯源" width="100%" />
       <br />
-      <sub><b>图 4：智能拓扑自动排版与多维布局</b><br />内置 Sugiyama 拓扑分层算法，支持左右/上下多向一键规整</sub>
+      <sub><b>图 4：执行控制台与异常节点溯源</b><br />WebSocket 实时事件流、异常节点自动高亮聚焦与格式化排错日志</sub>
     </td>
   </tr>
 </table>
