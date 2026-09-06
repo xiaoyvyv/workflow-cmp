@@ -121,19 +121,19 @@
   </tr>
 </table>
 
-### 📱 移动端/跨端应用与人机协同交互 (Mobile & SideEffect)
+### 💻 桌面端与 📱 移动端应用 (Desktop & Mobile)
 
 <table align="center" width="100%">
   <tr>
-    <td width="50%" align="center" valign="top">
-      <img src="docs/screenshot/device-1.png" alt="工作流管理与状态监控" width="100%" />
+    <td width="75%" align="center" valign="top">
+      <img src="docs/screenshot/device-1.png" alt="桌面端工作流执行与 Bridge 服务管理" width="100%" />
       <br />
-      <sub><b>图 5：工作流管理与状态监控</b><br />多端工作流列表管理、版本修订同步与服务状态指示</sub>
+      <sub><b>图 5：桌面端工作流执行与 Bridge 服务管理 (Desktop)</b><br />多模块工作流快捷运行、执行步骤/日志追踪与内嵌 Bridge 服务悬浮控制</sub>
     </td>
-    <td width="50%" align="center" valign="top">
-      <img src="docs/screenshot/device-2.jpg" alt="实时步骤追踪与人机协同 (Human-in-the-Loop)" width="100%" />
+    <td width="25%" align="center" valign="top">
+      <img src="docs/screenshot/device-2.jpg" alt="移动端工作流执行与实时步骤追踪" width="100%" />
       <br />
-      <sub><b>图 6：实时步骤追踪与人机协同 (Human-in-the-Loop)</b><br />节点生命周期步骤监控与挂起交互式副作用弹窗</sub>
+      <sub><b>图 6：移动端工作流执行与实时步骤追踪 (Mobile)</b><br />移动端响应式布局、执行流监控与局域网 Web 服务</sub>
     </td>
   </tr>
 </table>
