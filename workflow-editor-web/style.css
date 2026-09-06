@@ -94,6 +94,26 @@ textarea:disabled {
   box-sizing: border-box;
 }
 
+.toolbar button {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.toolbar input {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+  box-sizing: border-box;
+  line-height: normal;
+}
+
 .toolbar-brand {
   display: flex;
   align-items: center;
@@ -151,6 +171,7 @@ textarea:disabled {
   padding-left: 26px !important;
   width: 290px;
   min-width: 260px;
+  height: 32px;
   font-size: 13px;
 }
 
@@ -161,12 +182,14 @@ textarea:disabled {
 
 .token-input {
   width: 120px;
+  height: 32px;
   font-size: 13px;
 }
 
 .btn-connect {
   font-weight: 600;
   min-width: 60px;
+  height: 32px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -188,13 +211,14 @@ textarea:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  height: 32px;
+  padding: 0 12px;
+  box-sizing: border-box;
   border-radius: 6px;
   background: rgba(30, 41, 59, 0.45);
   border: 1px dashed rgba(71, 85, 105, 0.45);
   color: #94a3b8;
   font-size: 12px;
-  line-height: 1.4;
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
@@ -244,8 +268,9 @@ textarea:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
   border-radius: 6px;
   background: transparent;
   border: none;
@@ -255,6 +280,7 @@ textarea:disabled {
   transition: all 0.18s ease;
   user-select: none;
   margin-left: 4px;
+  flex-shrink: 0;
 }
 
 .btn-github-icon:hover {

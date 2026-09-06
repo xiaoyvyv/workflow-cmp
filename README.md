@@ -14,6 +14,7 @@
 </p>
 
 <p align="center">
+  <a href="#-界面预览与应用截图">界面预览</a> •
   <a href="#1-项目架构与模块划分">项目架构</a> •
   <a href="#2-执行模型与调度内核">调度内核</a> •
   <a href="#3-模板与表达式引擎">表达式引擎</a> •
@@ -89,8 +90,59 @@
 
 ---
 
+## 📸 界面预览与应用截图
+
+### 🖥️ Web DAG 可视化编排器 (Web Editor)
+
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/editor-1.png" alt="DAG 画布与节点拓扑编排" width="100%" />
+      <br />
+      <sub><b>图 1：DAG 画布与节点拓扑编排</b><br />支持节点拖拽、自由连线、端口类型校验与无限画布平移缩放</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/editor-2.png" alt="节点属性检查器与参数配置" width="100%" />
+      <br />
+      <sub><b>图 2：节点属性检查器与参数配置</b><br />动态表单渲染、表达式内联语法高亮与上下文变量绑定</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/editor-3.png" alt="执行控制台与实时事件流" width="100%" />
+      <br />
+      <sub><b>图 3：执行控制台与实时事件流</b><br />WebSocket 实时通道、执行进度高亮追踪与结构化调试日志</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/editor-4.png" alt="智能拓扑自动排版与多维布局" width="100%" />
+      <br />
+      <sub><b>图 4：智能拓扑自动排版与多维布局</b><br />内置 Sugiyama 拓扑分层算法，支持左右/上下多向一键规整</sub>
+    </td>
+  </tr>
+</table>
+
+### 📱 移动端/跨端应用与人机协同交互 (Mobile & SideEffect)
+
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/device-1.png" alt="工作流管理与状态监控" width="100%" />
+      <br />
+      <sub><b>图 5：工作流管理与状态监控</b><br />多端工作流列表管理、版本修订同步与服务状态指示</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <img src="docs/screenshot/device-2.jpg" alt="实时步骤追踪与人机协同 (Human-in-the-Loop)" width="100%" />
+      <br />
+      <sub><b>图 6：实时步骤追踪与人机协同 (Human-in-the-Loop)</b><br />节点生命周期步骤监控与挂起交互式副作用弹窗</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 目录
 
+- [📸 界面预览与应用截图](#-界面预览与应用截图)
 1. [项目架构与模块划分](#1-项目架构与模块划分)
     1. [模块结构](#11-模块结构)
     2. [核心设计要点](#12-核心设计要点)

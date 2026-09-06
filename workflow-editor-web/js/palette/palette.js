@@ -131,26 +131,26 @@ export function groupedPaletteSpecs() {
     });
 }
 
-// Track collapsed categories (so categories are expanded by default)
-const collapsedCategories = new Set();
+// Track expanded categories (collapsed by default)
+const expandedCategories = new Set();
 
 export function toggleCategory(category) {
-  if (collapsedCategories.has(category)) {
-    collapsedCategories.delete(category);
+  if (expandedCategories.has(category)) {
+    expandedCategories.delete(category);
   } else {
-    collapsedCategories.add(category);
+    expandedCategories.add(category);
   }
   renderPalette();
 }
 
 export function expandAllCategories() {
-  collapsedCategories.clear();
+  const groups = groupedPaletteSpecs();
+  groups.forEach((g) => expandedCategories.add(g.category));
   renderPalette();
 }
 
 export function collapseAllCategories() {
-  const groups = groupedPaletteSpecs();
-  groups.forEach((g) => collapsedCategories.add(g.category));
+  expandedCategories.clear();
   renderPalette();
 }
 
@@ -256,8 +256,8 @@ export function renderPalette() {
 
   paletteEl.innerHTML = groups
     .map(({ category, label, specs }) => {
-      // By default expanded unless present in collapsedCategories
-      const isExpanded = isSearching || state.pendingLink || !collapsedCategories.has(category);
+      // By default collapsed unless searching, pending link, or explicitly expanded
+      const isExpanded = isSearching || state.pendingLink || expandedCategories.has(category);
       const items = specs
         .map(
           (spec) => {
